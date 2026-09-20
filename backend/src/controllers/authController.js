@@ -1,9 +1,11 @@
 const asyncHandler = require('../utils/asyncHandler');
 const ApiError = require('../utils/ApiError');
 const { signToken } = require('../utils/jwt');
-const { normalizeUzPhone } = require('../utils/phoneValidator');
+const { isValidUzPhone } = require('../utils/phoneValidator');
 const User = require('../models/User');
 const Customer = require('../models/Customer');
+
+const PHONE_FORMAT_ERROR = 'Phone number must be in the exact format +998 XX XXX XX XX';
 
 // POST /api/auth/staff/login
 // Single shared login page for all staff. Role is detected automatically
@@ -39,16 +41,20 @@ const customerRegister = asyncHandler(async (req, res) => {
     throw new ApiError(400, 'Name, phone and password are required');
   }
 
-  const normalizedPhone = normalizeUzPhone(phone);
-  if (!normalizedPhone) {
-    throw new ApiError(400, 'Please enter a valid Uzbekistan phone number, e.g. +998901234567');
+  // Only leading/trailing whitespace is trimmed (not a format change —
+  // e.g. accidental copy-paste padding). The interior of the string must
+  // already be exactly "+998 XX XXX XX XX"; nothing else is rewritten or
+  // reformatted to fit.
+  const trimmedPhone = phone.trim();
+  if (!isValidUzPhone(trimmedPhone)) {
+    throw new ApiError(400, PHONE_FORMAT_ERROR);
   }
 
-  const existing = await Customer.findOne({ phone: normalizedPhone });
+  const existing = await Customer.findOne({ phone: trimmedPhone });
   if (existing) throw new ApiError(409, 'A customer with this phone number already exists');
 
   const passwordHash = await Customer.hashPassword(password);
-  const customer = await Customer.create({ name, phone: normalizedPhone, passwordHash });
+  const customer = await Customer.create({ name, phone: trimmedPhone, passwordHash });
 
   const token = signToken({ sub: customer._id.toString(), type: 'customer' });
   const safeCustomer = customer.toObject();
@@ -62,12 +68,12 @@ const customerLogin = asyncHandler(async (req, res) => {
   const { phone, password } = req.body;
   if (!phone || !password) throw new ApiError(400, 'Phone and password are required');
 
-  const normalizedPhone = normalizeUzPhone(phone);
-  if (!normalizedPhone) {
-    throw new ApiError(400, 'Please enter a valid Uzbekistan phone number, e.g. +998901234567');
+  const trimmedPhone = phone.trim();
+  if (!isValidUzPhone(trimmedPhone)) {
+    throw new ApiError(400, PHONE_FORMAT_ERROR);
   }
 
-  const customer = await Customer.findOne({ phone: normalizedPhone }).select('+passwordHash');
+  const customer = await Customer.findOne({ phone: trimmedPhone }).select('+passwordHash');
   if (!customer || !customer.isActive) throw new ApiError(401, 'Invalid credentials');
 
   const match = await customer.comparePassword(password);
