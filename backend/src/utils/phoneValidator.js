@@ -1,43 +1,24 @@
-// Validates and normalizes Uzbekistan phone numbers.
+// Strict Uzbekistan phone number validator.
 //
-// Accepts common input shapes a user might type or paste:
-//   "+998901234567", "998901234567", "901234567",
-//   "+998 90 123 45 67", "90-123-45-67", etc.
-// Always normalizes to the canonical E.164-style form "+998XXXXXXXXX"
-// (9 national digits after the 998 country code), which is what gets
-// stored in the database and what should be used for lookups/uniqueness
-// checks, so the same number typed with different spacing/formatting
-// always matches.
+// Per product requirement, ONLY this exact literal format is accepted:
 //
-// This is intentionally used on the backend (not just the frontend) so
-// authentication and registration are enforced server-side regardless of
-// what the client sends.
+//     +998 XX XXX XX XX
+//
+// i.e. "+998", a space, 2 digits, a space, 3 digits, a space, 2 digits,
+// a space, 2 digits — e.g. "+998 90 123 45 67".
+//
+// This is deliberately strict: it does NOT normalize, reformat, or
+// otherwise accept equivalent-looking input in a different shape
+// ("998901234567", "+998901234567", "90 123 45 67", "+998-90-123-45-67",
+// etc.). Anything that isn't already exactly this format is rejected.
+// The value is used/stored exactly as the caller provided it (after
+// trimming only leading/trailing whitespace, which is not a format
+// change) — never rewritten into the canonical shape.
 
-const UZ_PHONE_REGEX = /^\+998\d{9}$/;
+const UZ_PHONE_REGEX = /^\+998 \d{2} \d{3} \d{2} \d{2}$/;
 
-function normalizeUzPhone(raw) {
-  if (typeof raw !== 'string') return null;
-
-  const digits = raw.replace(/\D/g, '');
-  let national;
-
-  if (digits.startsWith('998') && digits.length === 12) {
-    national = digits.slice(3);
-  } else if (digits.length === 9) {
-    // Assume the caller omitted the country code (e.g. "901234567").
-    national = digits;
-  } else {
-    return null;
-  }
-
-  if (!/^\d{9}$/.test(national)) return null;
-
-  const normalized = `+998${national}`;
-  return UZ_PHONE_REGEX.test(normalized) ? normalized : null;
+function isValidUzPhone(value) {
+  return typeof value === 'string' && UZ_PHONE_REGEX.test(value);
 }
 
-function isValidUzPhone(raw) {
-  return normalizeUzPhone(raw) !== null;
-}
-
-module.exports = { UZ_PHONE_REGEX, normalizeUzPhone, isValidUzPhone };
+module.exports = { UZ_PHONE_REGEX, isValidUzPhone };
