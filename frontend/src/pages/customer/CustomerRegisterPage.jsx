@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCustomerAuth } from '../../context/CustomerAuthContext.jsx';
-import { isValidUzPhone, UZ_PHONE_PLACEHOLDER, UZ_PHONE_ERROR } from '../../utils/phone.js';
+import { isValidUzPhone, formatUzPhoneInput, UZ_PHONE_PLACEHOLDER, UZ_PHONE_ERROR } from '../../utils/phone.js';
 
 export default function CustomerRegisterPage() {
   const { register } = useCustomerAuth();
@@ -9,6 +9,10 @@ export default function CustomerRegisterPage() {
   const [form, setForm] = useState({ name: '', phone: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  function handlePhoneChange(e) {
+    setForm({ ...form, phone: formatUzPhoneInput(e.target.value) });
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -46,7 +50,9 @@ export default function CustomerRegisterPage() {
             className="input"
             placeholder={UZ_PHONE_PLACEHOLDER}
             value={form.phone}
-            onChange={e => setForm({ ...form, phone: e.target.value })}
+            onChange={handlePhoneChange}
+            inputMode="numeric"
+            maxLength={17}
             required
           />
         </div>
