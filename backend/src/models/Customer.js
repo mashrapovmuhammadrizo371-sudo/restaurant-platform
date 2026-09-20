@@ -14,14 +14,16 @@ const addressSchema = new mongoose.Schema(
 const customerSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
+    // Stored and matched EXACTLY as "+998 XX XXX XX XX" — no other shape
+    // is accepted, and nothing here rewrites/normalizes input into this
+    // format. See backend/src/utils/phoneValidator.js.
     phone: {
       type: String,
       required: true,
       unique: true,
-      trim: true,
       validate: {
         validator: isValidUzPhone,
-        message: props => `${props.value} is not a valid Uzbekistan phone number`
+        message: () => 'Phone number must be in the exact format +998 XX XXX XX XX'
       }
     },
     passwordHash: { type: String, required: true, select: false },
