@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCustomerAuth } from '../../context/CustomerAuthContext.jsx';
+import { formatUzPhoneInput, UZ_PHONE_PLACEHOLDER } from '../../utils/phone.js';
 
 export default function CustomerLoginPage() {
   const { login } = useCustomerAuth();
@@ -8,6 +9,10 @@ export default function CustomerLoginPage() {
   const [form, setForm] = useState({ phone: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  function handlePhoneChange(e) {
+    setForm({ ...form, phone: formatUzPhoneInput(e.target.value) });
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -32,9 +37,11 @@ export default function CustomerLoginPage() {
           <label className="form-label">Telefon raqam</label>
           <input
             className="input"
-            placeholder="+998901234567"
+            placeholder={UZ_PHONE_PLACEHOLDER}
             value={form.phone}
-            onChange={e => setForm({ ...form, phone: e.target.value })}
+            onChange={handlePhoneChange}
+            inputMode="numeric"
+            maxLength={17}
             required
           />
         </div>
