@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const { isValidUzPhone } = require('../utils/phoneValidator');
 
 const addressSchema = new mongoose.Schema(
   {
@@ -13,7 +14,16 @@ const addressSchema = new mongoose.Schema(
 const customerSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
-    phone: { type: String, required: true, unique: true, trim: true },
+    phone: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+      validate: {
+        validator: isValidUzPhone,
+        message: props => `${props.value} is not a valid Uzbekistan phone number`
+      }
+    },
     passwordHash: { type: String, required: true, select: false },
     addresses: [addressSchema],
     // Loyalty program: incremented automatically when one of the customer's
