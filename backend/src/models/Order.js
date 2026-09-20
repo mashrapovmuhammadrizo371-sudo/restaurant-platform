@@ -8,7 +8,9 @@ const orderSchema = new mongoose.Schema(
   {
     orderNumber: { type: String, required: true, unique: true },
     brand: { type: mongoose.Schema.Types.ObjectId, ref: 'Brand', required: true },
-    customer: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer', required: true },
+    // Not required: a waiter can create a walk-in table order for a guest
+    // with no registered customer account (see createTableOrderByStaff).
+    customer: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer', default: null },
 
     orderType: { type: String, enum: ['delivery', 'table'], required: true },
     items: { type: [orderItemSchema], required: true, validate: v => v.length > 0 },
