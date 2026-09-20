@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCustomerAuth } from '../../context/CustomerAuthContext.jsx';
+import { isValidUzPhone, UZ_PHONE_PLACEHOLDER, UZ_PHONE_ERROR } from '../../utils/phone.js';
 
 export default function CustomerRegisterPage() {
   const { register } = useCustomerAuth();
@@ -12,6 +13,12 @@ export default function CustomerRegisterPage() {
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
+
+    if (!isValidUzPhone(form.phone)) {
+      setError(UZ_PHONE_ERROR);
+      return;
+    }
+
     setLoading(true);
     try {
       await register(form.name, form.phone, form.password);
@@ -37,7 +44,7 @@ export default function CustomerRegisterPage() {
           <label className="form-label">Telefon raqam</label>
           <input
             className="input"
-            placeholder="+998901234567"
+            placeholder={UZ_PHONE_PLACEHOLDER}
             value={form.phone}
             onChange={e => setForm({ ...form, phone: e.target.value })}
             required
