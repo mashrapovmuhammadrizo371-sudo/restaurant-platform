@@ -23,6 +23,16 @@ const getCustomer = asyncHandler(async (req, res) => {
   res.json({ success: true, customer });
 });
 
+// GET /api/customers/leaderboard?limit=20  (public) — top customers by loyalty points
+const leaderboard = asyncHandler(async (req, res) => {
+  const limit = Math.min(Number(req.query.limit) || 20, 100);
+  const customers = await Customer.find({ isActive: true, points: { $gt: 0 } })
+    .select('name points totalOrders')
+    .sort({ points: -1 })
+    .limit(limit);
+  res.json({ success: true, leaderboard: customers });
+});
+
 // -- Customer's own profile/address/order-history endpoints --
 
 // PUT /api/customers/me
@@ -65,6 +75,7 @@ const myOrders = asyncHandler(async (req, res) => {
 module.exports = {
   listCustomers,
   getCustomer,
+  leaderboard,
   updateMyProfile,
   addMyAddress,
   deleteMyAddress,

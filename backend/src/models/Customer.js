@@ -16,6 +16,11 @@ const customerSchema = new mongoose.Schema(
     phone: { type: String, required: true, unique: true, trim: true },
     passwordHash: { type: String, required: true, select: false },
     addresses: [addressSchema],
+    // Loyalty program: incremented automatically when one of the customer's
+    // orders reaches a final completed state (delivered / completed).
+    // Powers the customer ratings/leaderboard feature.
+    points: { type: Number, default: 0 },
+    totalOrders: { type: Number, default: 0 },
     isActive: { type: Boolean, default: true }
   },
   { timestamps: true }

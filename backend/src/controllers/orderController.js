@@ -4,9 +4,22 @@ const Order = require('../models/Order');
 const Food = require('../models/Food');
 const Table = require('../models/Table');
 const PromoCode = require('../models/PromoCode');
-const generateOrderNumber = require('../utils/generateOrderNumber');
+const Customer = require('../models/Customer');
+const generateOrderNumber = require('../utils/orderNumber');
 const notify = require('../services/notifyService');
 const { ROLES } = require('../config/roles');
+
+// Loyalty program: 1 point per 1000 so'm spent, minimum 1 point, awarded
+// automatically once an order reaches a final completed state.
+const POINTS_PER_UNIT = 1000;
+
+async function awardPointsForOrder(order) {
+  if (!order.customer) return;
+  const points = Math.max(1, Math.floor(order.total / POINTS_PER_UNIT));
+  await Customer.findByIdAndUpdate(order.customer, {
+    $inc: { points, totalOrders: 1 }
+  });
+}
 
 // Recomputes item snapshots + totals server-side from live Food prices,
 // so the client can never manipulate pricing.
@@ -32,6 +45,10 @@ async function buildItemsAndTotals(rawItems, brandId) {
 
 // POST /api/orders  (customer places an order — delivery or table)
 const createOrder = asyncHandler(async (req, res) => {
+  if (req.principalType !== 'customer') {
+    throw new ApiError(403, 'Only customers can place orders through this endpoint');
+  }
+
   const {
     brand, orderType, items: rawItems, paymentMethod,
     deliveryAddress, tableId, promoCode: promoCodeStr
@@ -253,6 +270,7 @@ const completeDelivery = asyncHandler(async (req, res) => {
   order.status = 'delivered';
   order.paymentStatus = order.paymentMethod === 'naqd' ? 'paid' : order.paymentStatus;
   await order.save();
+  await awardPointsForOrder(order);
 
   if (order.customer) notify.orderStatusToCustomer(order.customer, order);
   res.json({ success: true, order });
@@ -270,14 +288,34 @@ const updateTableOrderStatus = asyncHandler(async (req, res) => {
   if (order.orderType !== 'table') throw new ApiError(400, 'Not a table order');
 
   order.status = status;
+
+  if (status === 'completed') {
+    order.paymentStatus = order.paymentMethod === 'naqd' ? 'paid' : order.paymentStatus;
+  }
+
   await order.save();
 
   if (status === 'completed' && order.table) {
     await Table.findByIdAndUpdate(order.table, { status: 'available' });
   }
+  if (status === 'completed') {
+    await awardPointsForOrder(order);
+  }
 
   notify.tableOrderToOfitsiant(order.brand, order);
   if (order.customer) notify.orderStatusToCustomer(order.customer, order);
+
+  res.json({ success: true, order });
+});
+
+// PUT /api/orders/:id/mark-paid  (cashier — confirms cash/card payment received)
+const markOrderPaid = asyncHandler(async (req, res) => {
+  const order = await Order.findById(req.params.id);
+  if (!order) throw new ApiError(404, 'Order not found');
+  if (order.paymentStatus === 'paid') throw new ApiError(409, 'Order is already marked as paid');
+
+  order.paymentStatus = 'paid';
+  await order.save();
 
   res.json({ success: true, order });
 });
@@ -292,5 +330,6 @@ module.exports = {
   assignCourier,
   startDelivery,
   completeDelivery,
-  updateTableOrderStatus
+  updateTableOrderStatus,
+  markOrderPaid
 };

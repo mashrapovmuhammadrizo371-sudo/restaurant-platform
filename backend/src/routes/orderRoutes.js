@@ -13,7 +13,8 @@ const {
   assignCourier,
   startDelivery,
   completeDelivery,
-  updateTableOrderStatus
+  updateTableOrderStatus,
+  markOrderPaid
 } = require('../controllers/orderController');
 
 // Customer places an order (delivery or table)
@@ -26,13 +27,13 @@ router.post('/table', authenticate(), requireRole(ROLES.OFITSIANT), createTableO
 router.get(
   '/',
   authenticate(),
-  requireRole(ROLES.ADMIN, ROLES.OPERATOR, ROLES.COURIER, ROLES.OFITSIANT),
+  requireRole(ROLES.ADMIN, ROLES.OPERATOR, ROLES.COURIER, ROLES.OFITSIANT, ROLES.CASHIER),
   listOrders
 );
 router.get(
   '/:id',
   authenticate(),
-  requireRole(ROLES.ADMIN, ROLES.OPERATOR, ROLES.COURIER, ROLES.OFITSIANT),
+  requireRole(ROLES.ADMIN, ROLES.OPERATOR, ROLES.COURIER, ROLES.OFITSIANT, ROLES.CASHIER),
   getOrder
 );
 
@@ -47,5 +48,8 @@ router.put('/:id/deliver-complete', authenticate(), requireRole(ROLES.COURIER), 
 
 // Ofitsiant actions
 router.put('/:id/table-status', authenticate(), requireRole(ROLES.OFITSIANT), updateTableOrderStatus);
+
+// Cashier actions
+router.put('/:id/mark-paid', authenticate(), requireRole(ROLES.CASHIER), markOrderPaid);
 
 module.exports = router;

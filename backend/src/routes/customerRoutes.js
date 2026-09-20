@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { authenticate } = require('../middleware/auth');
+const { authenticate, optionalAuthenticate } = require('../middleware/auth');
 const { requirePermission } = require('../middleware/rbac');
 const {
   listCustomers,
   getCustomer,
+  leaderboard,
   updateMyProfile,
   addMyAddress,
   deleteMyAddress,
@@ -16,6 +17,10 @@ router.put('/me', authenticate(), updateMyProfile);
 router.post('/me/addresses', authenticate(), addMyAddress);
 router.delete('/me/addresses/:addressId', authenticate(), deleteMyAddress);
 router.get('/me/orders', authenticate(), myOrders);
+
+// Public loyalty leaderboard (top customers by points). Declared before
+// '/:id' so the literal "leaderboard" path isn't swallowed by that param route.
+router.get('/leaderboard', optionalAuthenticate(), leaderboard);
 
 // Staff customer management
 router.get('/', authenticate(), requirePermission('customers.manage'), listCustomers);
