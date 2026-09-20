@@ -7,7 +7,8 @@ const REDIRECT_BY_ROLE = {
   admin: '/admin/dashboard',
   operator: '/operator',
   courier: '/courier',
-  ofitsiant: '/ofitsiant'
+  ofitsiant: '/ofitsiant',
+  cashier: '/cashier'
 };
 
 export default function StaffLoginPage() {
@@ -36,7 +37,7 @@ export default function StaffLoginPage() {
       <form onSubmit={handleSubmit} className="card" style={{ width: '100%', maxWidth: 360 }}>
         <h2 style={{ marginTop: 0 }}>Xodimlar uchun kirish</h2>
         <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: -8 }}>
-          Boss, Admin, Operator, Kuryer va Ofitsiant uchun umumiy login sahifasi.
+          Boss, Admin, Operator, Kuryer, Ofitsiant va Kassir uchun umumiy login sahifasi.
         </p>
 
         <div className="form-group">
