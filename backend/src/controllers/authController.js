@@ -1,6 +1,7 @@
 const asyncHandler = require('../utils/asyncHandler');
 const ApiError = require('../utils/ApiError');
 const { signToken } = require('../utils/jwt');
+const { normalizeUzPhone } = require('../utils/phoneValidator');
 const User = require('../models/User');
 const Customer = require('../models/Customer');
 
@@ -38,11 +39,16 @@ const customerRegister = asyncHandler(async (req, res) => {
     throw new ApiError(400, 'Name, phone and password are required');
   }
 
-  const existing = await Customer.findOne({ phone });
+  const normalizedPhone = normalizeUzPhone(phone);
+  if (!normalizedPhone) {
+    throw new ApiError(400, 'Please enter a valid Uzbekistan phone number, e.g. +998901234567');
+  }
+
+  const existing = await Customer.findOne({ phone: normalizedPhone });
   if (existing) throw new ApiError(409, 'A customer with this phone number already exists');
 
   const passwordHash = await Customer.hashPassword(password);
-  const customer = await Customer.create({ name, phone, passwordHash });
+  const customer = await Customer.create({ name, phone: normalizedPhone, passwordHash });
 
   const token = signToken({ sub: customer._id.toString(), type: 'customer' });
   const safeCustomer = customer.toObject();
@@ -56,7 +62,12 @@ const customerLogin = asyncHandler(async (req, res) => {
   const { phone, password } = req.body;
   if (!phone || !password) throw new ApiError(400, 'Phone and password are required');
 
-  const customer = await Customer.findOne({ phone }).select('+passwordHash');
+  const normalizedPhone = normalizeUzPhone(phone);
+  if (!normalizedPhone) {
+    throw new ApiError(400, 'Please enter a valid Uzbekistan phone number, e.g. +998901234567');
+  }
+
+  const customer = await Customer.findOne({ phone: normalizedPhone }).select('+passwordHash');
   if (!customer || !customer.isActive) throw new ApiError(401, 'Invalid credentials');
 
   const match = await customer.comparePassword(password);
