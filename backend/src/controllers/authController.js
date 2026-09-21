@@ -7,6 +7,7 @@ const User = require('../models/User');
 const Customer = require('../models/Customer');
 
 const PHONE_FORMAT_ERROR = 'Phone number must be in the exact format +998 XX XXX XX XX';
+const DEFAULT_GUEST_NAME = 'Mehmon';
 
 // POST /api/auth/staff/login
 // Single shared login page for all staff. Role is detected automatically
@@ -35,29 +36,34 @@ const staffMe = asyncHandler(async (req, res) => {
   res.json({ success: true, user: req.user.toSafeJSON() });
 });
 
-// POST /api/auth/customer/guest  — { name }
-// The current customer-facing entry point: enter a name, get a session,
-// browse and order. No phone/password required. Creates a lightweight
-// Customer record with no phone (phone is optional on the model) and an
-// unusable random password hash, since there is no password login path
-// for guest customers.
+// POST /api/auth/customer/guest  — { name?: string }
+// The current customer-facing entry point. Customer registration/login is
+// temporarily removed per product requirement: there is no login page and
+// no required interaction at all — the frontend calls this automatically,
+// silently, the first time a visitor arrives with no stored session, so
+// they can start browsing/ordering immediately. `name` is optional; a
+// generic default is used if omitted (kept accepting an explicit name too,
+// since nothing about the endpoint requires removing that — a future UI
+// could still let someone set a display name without a new endpoint).
 //
-// Note: this always creates a NEW customer record — there is currently no
-// way to "log back in" as the same guest identity on a different browser
-// or after clearing local storage (their JWT is what identifies them, per
-// the session-restore logic in CustomerAuthContext). Order history/points
-// tied to a name-only session live only as long as that token does.
-// customerRegister/customerLogin below remain available for a real
-// phone+password account with a durable, cross-device identity — the
-// frontend just doesn't route to them right now.
+// The returned JWT, stored client-side, IS the "secure session identifier
+// stored on the device" used to look up "My Orders" without an account —
+// no separate mechanism is introduced for that.
+//
+// Creates a lightweight Customer record with an unusable random password
+// hash, since there is no password login path for anonymous/guest
+// customers. Note: this always creates a NEW customer record — there is
+// no way to "log back in" as the same anonymous identity on a different
+// browser or after clearing local storage. customerRegister/customerLogin
+// below remain available for a real phone+password account with a
+// durable, cross-device identity (e.g. for a future mobile app) — the
+// current frontend just doesn't route to them.
 const customerGuest = asyncHandler(async (req, res) => {
-  const { name } = req.body;
-  if (!name || !String(name).trim()) {
-    throw new ApiError(400, 'Name is required');
-  }
+  const rawName = req.body && req.body.name;
+  const name = rawName && String(rawName).trim() ? String(rawName).trim() : DEFAULT_GUEST_NAME;
 
   const passwordHash = await Customer.hashPassword(crypto.randomBytes(24).toString('hex'));
-  const customer = await Customer.create({ name: String(name).trim(), passwordHash });
+  const customer = await Customer.create({ name, passwordHash });
 
   const token = signToken({ sub: customer._id.toString(), type: 'customer' });
   const safeCustomer = customer.toObject();
