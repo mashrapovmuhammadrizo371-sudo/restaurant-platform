@@ -68,7 +68,11 @@ export default function CourierPage() {
             <StatusBadge status={o.status} />
           </div>
           <div style={{ fontSize: 13, marginTop: 4 }}>{o.deliveryAddress}</div>
-          <div style={{ fontSize: 13 }}>{o.customer?.name} · {o.customer?.phone}</div>
+          {/* contactPhone is collected at checkout regardless of whether
+              the customer's account has a phone (customers can enter with
+              just a name), so it's the reliable number to call — prefer
+              it over the account's phone, which may not exist. */}
+          <div style={{ fontSize: 13 }}>{o.customer?.name} · 📞 {o.contactPhone || o.customer?.phone || "noma'lum"}</div>
           <div style={{ fontWeight: 700, marginTop: 4 }}>{o.total.toLocaleString()} so'm · {o.paymentMethod}</div>
           <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
             {o.status === 'accepted' && <button className="btn btn-primary" onClick={() => handleStart(o._id)}>Yetkazishni boshlash</button>}
