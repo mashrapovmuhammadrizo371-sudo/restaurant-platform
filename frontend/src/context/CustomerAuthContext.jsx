@@ -56,6 +56,18 @@ export function CustomerAuthProvider({ children }) {
     return () => { cancelled = true; };
   }, []);
 
+  // Current customer entry point: name only, no password. See
+  // backend authController.customerGuest.
+  async function continueAsGuest(name) {
+    const res = await api.post('/auth/customer/guest', { name });
+    localStorage.setItem('customerToken', res.token);
+    setCustomer(res.customer);
+    return res.customer;
+  }
+
+  // Kept for a possible future full-account flow (e.g. a mobile app) —
+  // not currently used by the customer-facing UI, which only calls
+  // continueAsGuest above.
   async function register(name, phone, password) {
     const res = await api.post('/auth/customer/register', { name, phone, password });
     localStorage.setItem('customerToken', res.token);
@@ -76,7 +88,7 @@ export function CustomerAuthProvider({ children }) {
   }
 
   return (
-    <CustomerAuthContext.Provider value={{ customer, loading, register, login, logout }}>
+    <CustomerAuthContext.Provider value={{ customer, loading, continueAsGuest, register, login, logout }}>
       {children}
     </CustomerAuthContext.Provider>
   );
