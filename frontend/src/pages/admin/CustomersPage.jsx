@@ -8,6 +8,7 @@ export default function CustomersPage() {
   const [error, setError] = useState('');
 
   function load() {
+    setLoading(true);
     getCustomers(search).then(res => setCustomers(res.customers)).catch(err => setError(err.message)).finally(() => setLoading(false));
   }
   useEffect(load, [search]);
@@ -42,7 +43,12 @@ export default function CustomersPage() {
               {customers.map(c => (
                 <tr key={c._id} style={{ borderBottom: '1px solid var(--border)' }}>
                   <td style={{ padding: 8 }}>{c.name}</td>
-                  <td style={{ padding: 8 }}>{c.phone}</td>
+                  {/* Guest (name-only) customers have no phone on their
+                      account — show a clear placeholder instead of a
+                      blank cell. */}
+                  <td style={{ padding: 8, color: c.phone ? 'inherit' : 'var(--text-muted)' }}>
+                    {c.phone || "Ko'rsatilmagan (mehmon)"}
+                  </td>
                   <td style={{ padding: 8 }}>{c.points}</td>
                   <td style={{ padding: 8 }}>{c.totalOrders}</td>
                 </tr>
