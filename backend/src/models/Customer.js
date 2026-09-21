@@ -14,18 +14,28 @@ const addressSchema = new mongoose.Schema(
 const customerSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
-    // Stored and matched EXACTLY as "+998 XX XXX XX XX" — no other shape
-    // is accepted, and nothing here rewrites/normalizes input into this
-    // format. See backend/src/utils/phoneValidator.js.
+    // Optional: customers can now enter the site with just a name (see
+    // authController.customerGuest) and add a phone number later (e.g. at
+    // checkout for delivery contact, or if they later register a full
+    // account — see customerRegister/customerLogin, kept for future use).
+    // `sparse: true` lets many customers share an absent phone without
+    // violating the uniqueness constraint on customers that do have one.
+    // Stored and matched EXACTLY as "+998 XX XXX XX XX" when present — no
+    // other shape is accepted, and nothing here rewrites/normalizes input
+    // into this format. See backend/src/utils/phoneValidator.js.
     phone: {
       type: String,
-      required: true,
+      required: false,
       unique: true,
+      sparse: true,
       validate: {
-        validator: isValidUzPhone,
+        validator: v => v === undefined || v === null || isValidUzPhone(v),
         message: () => 'Phone number must be in the exact format +998 XX XXX XX XX'
       }
     },
+    // Set only for customers created via the full register/login flow.
+    // Guest (name-only) customers get a random unusable password hash —
+    // there is no password-based login path for them.
     passwordHash: { type: String, required: true, select: false },
     addresses: [addressSchema],
     // Loyalty program: incremented automatically when one of the customer's
