@@ -42,7 +42,12 @@ export default function OrdersPage() {
             <StatusBadge status={o.status} />
           </div>
           <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>
-            {o.customer?.name || 'Mehmon'} · {o.orderType === 'delivery' ? o.deliveryAddress : `Stol #${o.table?.number}`}
+            {o.customer?.name || 'Mehmon'}
+            {/* contactPhone is collected at checkout regardless of whether
+                the customer account has a phone (customers can enter with
+                just a name) — it's the reliable number, prefer it. */}
+            {(o.contactPhone || o.customer?.phone) && ` · 📞 ${o.contactPhone || o.customer?.phone}`}
+            {' · '}{o.orderType === 'delivery' ? o.deliveryAddress : `Stol #${o.table?.number}`}
           </div>
           <div style={{ fontWeight: 700, marginTop: 4 }}>
             {o.total.toLocaleString()} so'm · {o.paymentMethod} · {o.paymentStatus === 'paid' ? "To'langan" : 'Kutilmoqda'}
