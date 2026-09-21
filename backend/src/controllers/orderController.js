@@ -8,6 +8,7 @@ const Customer = require('../models/Customer');
 const generateOrderNumber = require('../utils/orderNumber');
 const notify = require('../services/notifyService');
 const { ROLES } = require('../config/roles');
+const { isValidUzPhone } = require('../utils/phoneValidator');
 
 // Loyalty program: 1 point per 1000 so'm spent, minimum 1 point, awarded
 // automatically once an order reaches a final completed state.
@@ -51,7 +52,7 @@ const createOrder = asyncHandler(async (req, res) => {
 
   const {
     brand, orderType, items: rawItems, paymentMethod,
-    deliveryAddress, tableId, promoCode: promoCodeStr
+    deliveryAddress, contactPhone, tableId, promoCode: promoCodeStr
   } = req.body;
 
   if (!brand || !orderType || !paymentMethod) {
@@ -60,6 +61,9 @@ const createOrder = asyncHandler(async (req, res) => {
   if (!['delivery', 'table'].includes(orderType)) throw new ApiError(400, 'Invalid orderType');
   if (orderType === 'delivery' && !deliveryAddress) {
     throw new ApiError(400, 'deliveryAddress is required for delivery orders');
+  }
+  if (orderType === 'delivery' && !isValidUzPhone(contactPhone)) {
+    throw new ApiError(400, 'contactPhone is required for delivery orders and must be in the exact format +998 XX XXX XX XX');
   }
   if (orderType === 'table' && !tableId) {
     throw new ApiError(400, 'tableId is required for table orders');
@@ -102,6 +106,7 @@ const createOrder = asyncHandler(async (req, res) => {
     promoCode: promoCodeDoc ? promoCodeDoc._id : null,
     paymentMethod,
     deliveryAddress: orderType === 'delivery' ? deliveryAddress : null,
+    contactPhone: orderType === 'delivery' ? contactPhone : null,
     table: orderType === 'table' ? table._id : null,
     status: 'new'
   });
