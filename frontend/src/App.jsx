@@ -24,7 +24,6 @@ import CashierPage from './pages/staff/CashierPage.jsx';
 import CustomerProtectedRoute from './components/CustomerProtectedRoute.jsx';
 import CustomerLayout from './layouts/CustomerLayout.jsx';
 import CustomerLoginPage from './pages/customer/CustomerLoginPage.jsx';
-import CustomerRegisterPage from './pages/customer/CustomerRegisterPage.jsx';
 import BrandListPage from './pages/customer/BrandListPage.jsx';
 import BrandMenuPage from './pages/customer/BrandMenuPage.jsx';
 import CartPage from './pages/customer/CartPage.jsx';
@@ -93,8 +92,8 @@ export default function App() {
       />
 
       {/* -------- Customer -------- */}
+      {/* Name-only entry point. No separate registration page/route. */}
       <Route path="/login" element={<CustomerLoginPage />} />
-      <Route path="/register" element={<CustomerRegisterPage />} />
 
       <Route
         element={
