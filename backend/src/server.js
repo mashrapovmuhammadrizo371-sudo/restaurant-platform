@@ -6,6 +6,7 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 
+const { requireEnv } = require('./config/validateEnv');
 const connectDB = require('./config/db');
 const { initSocket } = require('./services/socketService');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
@@ -59,6 +60,11 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 5000;
 
 async function start() {
+  // Fail fast and loud if required config (JWT_SECRET, MONGO_URI) is
+  // missing, instead of booting "successfully" and crashing confusingly
+  // on the first request that actually needs it. See config/validateEnv.js.
+  requireEnv();
+
   await connectDB();
 
   const httpServer = http.createServer(app);
