@@ -52,7 +52,11 @@ export default function OperatorPage() {
             <StatusBadge status={o.status} />
           </div>
           <div style={{ fontSize: 13, marginTop: 4 }}>
-            {o.customer?.name || 'Mehmon'} · {o.customer?.phone || ''} ·{' '}
+            {/* contactPhone is collected at checkout regardless of whether
+                the customer's account has a phone (customers can enter with
+                just a name), so it's the reliable number to call — prefer
+                it over the account's phone, which may not exist. */}
+            {o.customer?.name || 'Mehmon'} · 📞 {o.contactPhone || o.customer?.phone || "noma'lum"} ·{' '}
             {o.orderType === 'delivery' ? o.deliveryAddress : `Stol #${o.table?.number}`}
           </div>
           <ul style={{ fontSize: 13, margin: '6px 0' }}>
@@ -75,6 +79,7 @@ export default function OperatorPage() {
             <StatusBadge status={o.status} />
           </div>
           <div style={{ fontSize: 13, marginTop: 4 }}>{o.deliveryAddress}</div>
+          <div style={{ fontSize: 13 }}>📞 {o.contactPhone || o.customer?.phone || "noma'lum"}</div>
           {!o.courier && o.status === 'accepted' && (
             <select className="input" style={{ marginTop: 8 }} onChange={e => handleAssign(o._id, e.target.value)} defaultValue="">
               <option value="" disabled>Kuryer tayinlash</option>
