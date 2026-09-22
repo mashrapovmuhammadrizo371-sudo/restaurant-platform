@@ -28,6 +28,7 @@ import CartPage from './pages/customer/CartPage.jsx';
 import MyOrdersPage from './pages/customer/MyOrdersPage.jsx';
 import CustomerSettingsPage from './pages/customer/SettingsPage.jsx';
 import RegisterPage from './pages/customer/RegisterPage.jsx';
+import LoginPage from './pages/customer/LoginPage.jsx';
 import RestaurantsPage from './pages/customer/RestaurantsPage.jsx';
 
 export default function App() {
@@ -106,6 +107,7 @@ export default function App() {
         <Route path="/orders" element={<MyOrdersPage />} />
         <Route path="/settings" element={<CustomerSettingsPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/restaurants" element={<RestaurantsPage />} />
       </Route>
 
