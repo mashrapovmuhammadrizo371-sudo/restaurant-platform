@@ -32,3 +32,11 @@ export function getCustomer(id) {
 export function updateCustomerStatus(id, isActive) {
   return staffApi.patch(`/customers/${id}/status`, { isActive });
 }
+
+export function updateCustomer(id, data) {
+  return staffApi.put(`/customers/${id}`, data);
+}
+
+export function deleteCustomer(id) {
+  return staffApi.delete(`/customers/${id}`);
+}
