@@ -4,7 +4,7 @@ const User = require('../models/User');
 const { ROLES } = require('../config/roles');
 
 // GET /api/couriers?brand=<id>&availability=bo_shman
-// Used by the Operator panel to see who can be assigned.
+// Used by the Cashier/Operator panel to see who can be assigned.
 const listCouriers = asyncHandler(async (req, res) => {
   const filter = { role: ROLES.COURIER };
   if (req.query.brand) filter.brands = req.query.brand;
@@ -31,4 +31,21 @@ const setMyAvailability = asyncHandler(async (req, res) => {
   res.json({ success: true, courier: req.user.toSafeJSON() });
 });
 
-module.exports = { listCouriers, setMyAvailability };
+// GET /api/waiters?brand=<id>
+// Used by the Cashier panel to pick who a table order gets sent to
+// (see orderController.assignWaiter). Deliberately narrow (name/id only,
+// via toSafeJSON) rather than granting Cashier the broad
+// 'employees.manage' permission just to see waiter names.
+const listWaiters = asyncHandler(async (req, res) => {
+  const filter = { role: ROLES.OFITSIANT };
+  if (req.query.brand) filter.brands = req.query.brand;
+
+  if (req.user.role !== ROLES.BOSS) {
+    filter.brands = { $in: req.user.brands };
+  }
+
+  const waiters = await User.find(filter).sort({ name: 1 });
+  res.json({ success: true, waiters: waiters.map(w => w.toSafeJSON()) });
+});
+
+module.exports = { listCouriers, setMyAvailability, listWaiters };
