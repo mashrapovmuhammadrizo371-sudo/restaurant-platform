@@ -12,6 +12,10 @@ const { isValidUzPhone } = require('../utils/phoneValidator');
 
 // Loyalty program: 1 point per 1000 so'm spent, minimum 1 point, awarded
 // automatically once an order reaches a final completed state.
+//
+// NOTE: customer-facing points/leaderboard are currently disabled (no UI
+// shows this), but this still runs so the underlying data keeps
+// accumulating and the feature can be re-enabled later without a backfill.
 const POINTS_PER_UNIT = 1000;
 
 async function awardPointsForOrder(order) {
@@ -151,12 +155,15 @@ const createTableOrderByStaff = asyncHandler(async (req, res) => {
     paymentMethod,
     table: table._id,
     ofitsiant: req.user._id,
-    status: 'accepted' // staff-created table orders skip the operator accept step
+    status: 'accepted' // staff-created table orders skip the cashier accept step
   });
 
   table.status = 'busy';
   await table.save();
 
+  // Also let the Cashier know a waiter created a direct order, so it
+  // shows up in their live order list/dashboard like every other order.
+  notify.newOrderToOperators(brand, order);
   notify.tableOrderToOfitsiant(brand, order);
 
   res.status(201).json({ success: true, order });
@@ -177,6 +184,7 @@ const listOrders = asyncHandler(async (req, res) => {
     .populate('brand', 'name mainColor')
     .populate('customer', 'name phone')
     .populate('courier', 'name phone')
+    .populate('ofitsiant', 'name')
     .populate('table', 'number')
     .sort({ createdAt: -1 });
 
@@ -188,12 +196,13 @@ const getOrder = asyncHandler(async (req, res) => {
     .populate('brand', 'name mainColor')
     .populate('customer', 'name phone')
     .populate('courier', 'name phone')
+    .populate('ofitsiant', 'name')
     .populate('table', 'number');
   if (!order) throw new ApiError(404, 'Order not found');
   res.json({ success: true, order });
 });
 
-// PUT /api/orders/:id/accept  (operator)
+// PUT /api/orders/:id/accept  (cashier / operator)
 const acceptOrder = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id);
   if (!order) throw new ApiError(404, 'Order not found');
@@ -207,7 +216,7 @@ const acceptOrder = asyncHandler(async (req, res) => {
   res.json({ success: true, order });
 });
 
-// PUT /api/orders/:id/reject  (operator)
+// PUT /api/orders/:id/reject  (cashier / operator)
 const rejectOrder = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id);
   if (!order) throw new ApiError(404, 'Order not found');
@@ -224,7 +233,7 @@ const rejectOrder = asyncHandler(async (req, res) => {
   res.json({ success: true, order });
 });
 
-// PUT /api/orders/:id/assign-courier  (operator)  { courierId }
+// PUT /api/orders/:id/assign-courier  (cashier / operator)  { courierId }
 const assignCourier = asyncHandler(async (req, res) => {
   const { courierId } = req.body;
   if (!courierId) throw new ApiError(400, 'courierId is required');
@@ -246,6 +255,32 @@ const assignCourier = asyncHandler(async (req, res) => {
 
   notify.orderAssignedToCourier(courier._id, order);
   if (order.customer) notify.orderStatusToCustomer(order.customer, order);
+
+  res.json({ success: true, order });
+});
+
+// PUT /api/orders/:id/assign-waiter  (cashier / operator)  { waiterId }
+// Sends an accepted table order to a specific waiter, who then sees it in
+// their own panel (listOrders filters by ofitsiant = that waiter) and
+// clicks "Qabul qilish" (-> updateTableOrderStatus 'preparing') to confirm
+// receipt back to the Cashier.
+const assignWaiter = asyncHandler(async (req, res) => {
+  const { waiterId } = req.body;
+  if (!waiterId) throw new ApiError(400, 'waiterId is required');
+
+  const order = await Order.findById(req.params.id);
+  if (!order) throw new ApiError(404, 'Order not found');
+  if (order.orderType !== 'table') throw new ApiError(400, 'Only table orders can be sent to a waiter');
+  if (order.status !== 'accepted') throw new ApiError(409, 'Order must be accepted before sending it to a waiter');
+
+  const User = require('../models/User');
+  const waiter = await User.findOne({ _id: waiterId, role: ROLES.OFITSIANT, isActive: true });
+  if (!waiter) throw new ApiError(404, 'Waiter not found');
+
+  order.ofitsiant = waiter._id;
+  await order.save();
+
+  notify.tableOrderToOfitsiant(order.brand, order);
 
   res.json({ success: true, order });
 });
@@ -282,6 +317,10 @@ const completeDelivery = asyncHandler(async (req, res) => {
 });
 
 // PUT /api/orders/:id/table-status  (ofitsiant)  { status: preparing|ready|completed }
+// A waiter calling this with status='preparing' on an order the Cashier
+// just sent them (see assignWaiter) IS their "Qabul qilish" acceptance —
+// the Cashier's own order list reflects the status change immediately, no
+// separate "acknowledge" endpoint needed.
 const updateTableOrderStatus = asyncHandler(async (req, res) => {
   const { status } = req.body;
   if (!['preparing', 'ready', 'completed'].includes(status)) {
@@ -333,6 +372,7 @@ module.exports = {
   acceptOrder,
   rejectOrder,
   assignCourier,
+  assignWaiter,
   startDelivery,
   completeDelivery,
   updateTableOrderStatus,
