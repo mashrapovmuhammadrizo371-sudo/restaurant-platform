@@ -14,6 +14,7 @@ const addressSchema = new mongoose.Schema(
 const customerSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
+    surname: { type: String, default: '', trim: true },
     // Optional: customers can now enter the site with just a name (see
     // authController.customerGuest) and add a phone number later (e.g. at
     // checkout for delivery contact, or if they later register a full
