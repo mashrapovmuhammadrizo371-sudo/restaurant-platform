@@ -27,3 +27,8 @@ export function getCustomers(search) {
 export function getCustomer(id) {
   return staffApi.get(`/customers/${id}`);
 }
+
+
+export function updateCustomerStatus(id, isActive) {
+  return staffApi.patch(`/customers/${id}/status`, { isActive });
+}
