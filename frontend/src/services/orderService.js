@@ -35,6 +35,10 @@ export function assignCourier(id, courierId) {
   return staffApi.put(`/orders/${id}/assign-courier`, { courierId });
 }
 
+export function assignWaiter(id, waiterId) {
+  return staffApi.put(`/orders/${id}/assign-waiter`, { waiterId });
+}
+
 export function startDelivery(id) {
   return staffApi.put(`/orders/${id}/deliver-start`);
 }
