@@ -27,7 +27,16 @@ export default function SettingsPage() {
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [openLegal, setOpenLegal] = useState(null); // null | 'terms' | 'privacy'
+  const [openLegal, setOpenLegal] = useState(null);
+  const [profile, setProfile] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('customerProfile')) || { name: '', phone: '', address: '', latitude: null, longitude: null };
+    } catch {
+      return { name: '', phone: '', address: '', latitude: null, longitude: null };
+    }
+  });
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [locationError, setLocationError] = useState('');
 
   useEffect(() => {
     getBrands()
@@ -36,24 +45,114 @@ export default function SettingsPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  function updateProfile(key, value) {
+    setProfile(prev => ({ ...prev, [key]: value }));
+  }
+
+  function saveProfile() {
+    localStorage.setItem('customerProfile', JSON.stringify(profile));
+  }
+
+  function detectLocation() {
+    if (!navigator.geolocation) {
+      setLocationError(t('locationNotSupported'));
+      return;
+    }
+    setLocationLoading(true);
+    setLocationError('');
+    navigator.geolocation.getCurrentPosition(
+      async ({ coords }) => {
+        const { latitude, longitude } = coords;
+        let address = '';
+        try {
+          const response = await fetch(
+            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=${language}`
+          );
+          if (response.ok) {
+            const data = await response.json();
+            address = [
+              data.locality,
+              data.city,
+              data.principalSubdivision,
+              data.countryName
+            ].filter(Boolean).filter((value, index, arr) => arr.indexOf(value) === index).join(', ');
+          }
+        } catch {
+          // Coordinates are still saved even if address lookup fails.
+        }
+        setProfile(prev => {
+          const next = { ...prev, latitude, longitude, ...(address ? { address } : {}) };
+          localStorage.setItem('customerProfile', JSON.stringify(next));
+          return next;
+        });
+        setLocationLoading(false);
+      },
+      err => {
+        const messages = {
+          1: t('locationPermissionDenied'),
+          2: t('locationUnavailable'),
+          3: t('locationTimeout')
+        };
+        setLocationError(messages[err.code] || t('locationUnavailable'));
+        setLocationLoading(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  }
+
+  function clearProfile() {
+    const empty = { name: '', phone: '', address: '', latitude: null, longitude: null };
+    localStorage.removeItem('customerProfile');
+    setProfile(empty);
+    setLocationError('');
+  }
+
   function toggleLegal(key) {
     setOpenLegal(prev => (prev === key ? null : key));
   }
 
   return (
-    <div className="container" style={{ paddingTop: 16 }}>
-      <h2 style={{ marginTop: 0 }}>{t('settings')}</h2>
+    <div className="container" style={{ paddingTop: 16, paddingBottom: 90 }}>
+      <h2 style={{ marginTop: 0 }}>👤 {t('profile')}</h2>
+
+      <div className="card" style={{ marginBottom: 14 }}>
+        <div className="form-label">{t('profileInfo')}</div>
+        <div className="form-group">
+          <label className="form-label">{t('name')}</label>
+          <input className="input" value={profile.name} onChange={e => updateProfile('name', e.target.value)} placeholder={t('namePlaceholder')} />
+        </div>
+        <div className="form-group">
+          <label className="form-label">{t('phone')}</label>
+          <input className="input" type="tel" value={profile.phone} onChange={e => updateProfile('phone', e.target.value)} placeholder="+998 90 123 45 67" />
+        </div>
+        <div className="form-group">
+          <label className="form-label">{t('address')}</label>
+          <textarea className="input" rows={3} value={profile.address} onChange={e => updateProfile('address', e.target.value)} placeholder={t('addressPlaceholder')} />
+        </div>
+
+        <button type="button" className="btn btn-primary" style={{ width: '100%', marginBottom: 8 }} onClick={detectLocation} disabled={locationLoading}>
+          📍 {locationLoading ? t('detectingLocation') : t('detectLocation')}
+        </button>
+        {locationError && <div className="error-text">{locationError}</div>}
+        {profile.latitude && profile.longitude && (
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 10 }}>
+            📌 {t('locationDetected')}: {profile.latitude.toFixed(6)}, {profile.longitude.toFixed(6)}
+          </div>
+        )}
+
+        <button type="button" className="btn btn-secondary" style={{ width: '100%' }} onClick={saveProfile}>
+          💾 {t('saveProfile')}
+        </button>
+        <button type="button" className="btn" style={{ width: '100%', marginTop: 8, background: 'transparent', color: 'var(--danger)' }} onClick={clearProfile}>
+          {t('clearProfile')}
+        </button>
+      </div>
 
       <div className="card" style={{ marginBottom: 14 }}>
         <div className="form-label" style={{ marginBottom: 8 }}>{t('language')}</div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           {available.map(code => (
-            <button
-              key={code}
-              type="button"
-              className={`btn ${language === code ? 'btn-primary' : 'btn-secondary'}`}
-              onClick={() => setLanguage(code)}
-            >
+            <button key={code} type="button" className={`btn ${language === code ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setLanguage(code)}>
               {LANGUAGE_LABELS[code] || code}
             </button>
           ))}
@@ -86,35 +185,14 @@ export default function SettingsPage() {
       </div>
 
       <div className="card">
-        <button
-          type="button"
-          className="btn btn-secondary"
-          style={{ width: '100%', justifyContent: 'space-between', display: 'flex' }}
-          onClick={() => toggleLegal('terms')}
-        >
-          <span>📄 {t('termsOfUse')}</span>
-          <span>{openLegal === 'terms' ? '−' : '+'}</span>
+        <button type="button" className="btn btn-secondary" style={{ width: '100%', justifyContent: 'space-between', display: 'flex' }} onClick={() => toggleLegal('terms')}>
+          <span>📄 {t('termsOfUse')}</span><span>{openLegal === 'terms' ? '−' : '+'}</span>
         </button>
-        {openLegal === 'terms' && (
-          <div style={{ fontSize: 13, color: 'var(--text-muted)', padding: '10px 4px' }}>
-            {LEGAL_TEXT.terms[language] || LEGAL_TEXT.terms.uz}
-          </div>
-        )}
-
-        <button
-          type="button"
-          className="btn btn-secondary"
-          style={{ width: '100%', justifyContent: 'space-between', display: 'flex', marginTop: 8 }}
-          onClick={() => toggleLegal('privacy')}
-        >
-          <span>🔒 {t('privacyPolicy')}</span>
-          <span>{openLegal === 'privacy' ? '−' : '+'}</span>
+        {openLegal === 'terms' && <div style={{ fontSize: 13, color: 'var(--text-muted)', padding: '10px 4px' }}>{LEGAL_TEXT.terms[language] || LEGAL_TEXT.terms.uz}</div>}
+        <button type="button" className="btn btn-secondary" style={{ width: '100%', justifyContent: 'space-between', display: 'flex', marginTop: 8 }} onClick={() => toggleLegal('privacy')}>
+          <span>🔒 {t('privacyPolicy')}</span><span>{openLegal === 'privacy' ? '−' : '+'}</span>
         </button>
-        {openLegal === 'privacy' && (
-          <div style={{ fontSize: 13, color: 'var(--text-muted)', padding: '10px 4px' }}>
-            {LEGAL_TEXT.privacy[language] || LEGAL_TEXT.privacy.uz}
-          </div>
-        )}
+        {openLegal === 'privacy' && <div style={{ fontSize: 13, color: 'var(--text-muted)', padding: '10px 4px' }}>{LEGAL_TEXT.privacy[language] || LEGAL_TEXT.privacy.uz}</div>}
       </div>
     </div>
   );
