@@ -37,10 +37,17 @@ router.get(
   getOrder
 );
 
-// Operator actions
-router.put('/:id/accept', authenticate(), requireRole(ROLES.OPERATOR), acceptOrder);
-router.put('/:id/reject', authenticate(), requireRole(ROLES.OPERATOR), rejectOrder);
-router.put('/:id/assign-courier', authenticate(), requireRole(ROLES.OPERATOR), assignCourier);
+// Order dispatch (accept/reject a new order, assign a courier to a
+// delivery order). Historically Operator-only; the current staff-role
+// spec routes new orders through Kassir (Cashier) instead, who now sees
+// incoming orders, assigns couriers, and forwards table orders to the
+// waiter. Cashier is granted here ADDITIVELY — Operator keeps the same
+// access and its panel (OperatorPage.jsx) is unchanged, so nothing that
+// worked before stops working; a deployment that still uses Operator
+// accounts is unaffected.
+router.put('/:id/accept', authenticate(), requireRole(ROLES.OPERATOR, ROLES.CASHIER), acceptOrder);
+router.put('/:id/reject', authenticate(), requireRole(ROLES.OPERATOR, ROLES.CASHIER), rejectOrder);
+router.put('/:id/assign-courier', authenticate(), requireRole(ROLES.OPERATOR, ROLES.CASHIER), assignCourier);
 
 // Courier actions
 router.put('/:id/deliver-start', authenticate(), requireRole(ROLES.COURIER), startDelivery);
