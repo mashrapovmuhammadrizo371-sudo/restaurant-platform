@@ -7,10 +7,12 @@ export default function TablesPage() {
   const [tables, setTables] = useState([]);
   const [newNumber, setNewNumber] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   function load() {
     if (!brandId) return;
-    getStaffTables(brandId).then(res => setTables(res.tables)).catch(err => setError(err.message));
+    setLoading(true);
+    getStaffTables(brandId).then(res => setTables(res.tables)).catch(err => setError(err.message)).finally(() => setLoading(false));
   }
   useEffect(load, [brandId]);
 
@@ -39,12 +41,17 @@ export default function TablesPage() {
       <BrandSelector value={brandId} onChange={setBrandId} />
       {error && <div className="error-text">{error}</div>}
 
+      {!brandId && <div className="empty-state">Brendni tanlang</div>}
+
       {brandId && (
         <>
           <div className="card" style={{ marginTop: 16, display: 'flex', gap: 8 }}>
             <input className="input" type="number" min={1} value={newNumber} onChange={e => setNewNumber(e.target.value)} placeholder="Stol raqami" />
             <button className="btn btn-primary" onClick={handleAdd}>Qo'shish</button>
           </div>
+
+          {loading && <div className="empty-state"><div className="spinner" style={{ margin: '0 auto' }} /></div>}
+          {!loading && !tables.length && <div className="empty-state">Bu brend uchun stollar yo'q</div>}
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12, marginTop: 16 }}>
             {tables.map(t => (
