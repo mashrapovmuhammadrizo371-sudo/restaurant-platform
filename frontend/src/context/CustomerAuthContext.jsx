@@ -40,6 +40,10 @@ export function CustomerAuthProvider({ children }) {
             if (!cancelled) setCustomer(res.customer);
             return;
           } catch (err) {
+            if (err.status === 403) {
+              if (!cancelled) setError('blocked');
+              return;
+            }
             if (err.status === 401) {
               // Token really is invalid/expired — fall through and
               // create a fresh anonymous session below instead of
