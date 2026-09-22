@@ -34,7 +34,9 @@ export default function CustomersPage() {
             <thead>
               <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--border)' }}>
                 <th style={{ padding: 8 }}>Ism</th>
+                <th style={{ padding: 8 }}>Familiya</th>
                 <th style={{ padding: 8 }}>Telefon</th>
+                <th style={{ padding: 8 }}>Manzil</th>
                 <th style={{ padding: 8 }}>Ball</th>
                 <th style={{ padding: 8 }}>Buyurtmalar</th>
               </tr>
@@ -43,12 +45,12 @@ export default function CustomersPage() {
               {customers.map(c => (
                 <tr key={c._id} style={{ borderBottom: '1px solid var(--border)' }}>
                   <td style={{ padding: 8 }}>{c.name}</td>
-                  {/* Guest (name-only) customers have no phone on their
-                      account — show a clear placeholder instead of a
-                      blank cell. */}
+                  <td style={{ padding: 8 }}>{c.surname || '—'}</td>
+                  {/* Guest customers may still have no phone until the profile is saved. */}
                   <td style={{ padding: 8, color: c.phone ? 'inherit' : 'var(--text-muted)' }}>
                     {c.phone || "Ko'rsatilmagan (mehmon)"}
                   </td>
+                  <td style={{ padding: 8 }}>{c.address || '—'}</td>
                   <td style={{ padding: 8 }}>{c.points}</td>
                   <td style={{ padding: 8 }}>{c.totalOrders}</td>
                 </tr>
