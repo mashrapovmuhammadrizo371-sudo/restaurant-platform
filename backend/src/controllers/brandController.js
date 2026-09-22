@@ -4,6 +4,14 @@ const Brand = require('../models/Brand');
 const { filePublicUrl } = require('../middleware/upload');
 const { ROLES } = require('../config/roles');
 
+function publicBrand(brand, req) {
+  const data = brand.toObject ? brand.toObject() : { ...brand };
+  if (data.logo && data.logo.startsWith('/')) {
+    data.logo = `${req.protocol}://${req.get('host')}${data.logo}`;
+  }
+  return data;
+}
+
 // GET /api/brands  (public: only active brands; staff: all, scoped by role)
 const listBrands = asyncHandler(async (req, res) => {
   let filter = {};
@@ -15,14 +23,14 @@ const listBrands = asyncHandler(async (req, res) => {
   }
 
   const brands = await Brand.find(filter).sort({ name: 1 });
-  res.json({ success: true, brands });
+  res.json({ success: true, brands: brands.map(brand => publicBrand(brand, req)) });
 });
 
 // GET /api/brands/:id
 const getBrand = asyncHandler(async (req, res) => {
   const brand = await Brand.findById(req.params.id);
   if (!brand) throw new ApiError(404, 'Brand not found');
-  res.json({ success: true, brand });
+  res.json({ success: true, brand: publicBrand(brand, req) });
 });
 
 // POST /api/brands  (boss only)
@@ -31,7 +39,7 @@ const createBrand = asyncHandler(async (req, res) => {
   if (req.file) body.logo = filePublicUrl(req.file.filename);
 
   const brand = await Brand.create(body);
-  res.status(201).json({ success: true, brand });
+  res.status(201).json({ success: true, brand: publicBrand(brand, req) });
 });
 
 // PUT /api/brands/:id  (boss, or admin with brand access + brands.manage permission)
@@ -49,7 +57,7 @@ const updateBrand = asyncHandler(async (req, res) => {
   if (req.file) brand.logo = filePublicUrl(req.file.filename);
 
   await brand.save();
-  res.json({ success: true, brand });
+  res.json({ success: true, brand: publicBrand(brand, req) });
 });
 
 // DELETE /api/brands/:id  (boss only)
