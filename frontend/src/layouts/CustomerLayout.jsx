@@ -24,13 +24,13 @@ export default function CustomerLayout() {
       </button>
       {menuOpen && <div className="customer-menu-backdrop" onClick={() => setMenuOpen(false)} />}
       <aside className={'customer-side-menu ' + (menuOpen ? 'open' : '')}>
-        <div className="customer-menu-head"><strong>Меню</strong><button onClick={() => setMenuOpen(false)}>×</button></div>
-        <button className="customer-menu-link" onClick={() => { setMenuOpen(false); window.location.href='/register'; }}>↪ <span>Войти</span></button>
-        <button className="customer-menu-link" onClick={() => { setMenuOpen(false); window.location.href='/restaurants'; }}>📍 <span>Рестораны</span></button>
-        <a className="customer-menu-link" href={restaurantPhone ? `tel:${restaurantPhone.replace(/[^+0-9]/g, '')}` : undefined} onClick={() => setMenuOpen(false)}>📞 <span>Позвонить нам</span></a>
-        <button className="customer-menu-link" onClick={() => { setMenuOpen(false); window.location.href='/settings'; }}>⚙️ <span>Настройки</span></button>
+        <div className="customer-menu-head"><strong>{t('menu')}</strong><button onClick={() => setMenuOpen(false)}>×</button></div>
+        <button className="customer-menu-link" onClick={() => { setMenuOpen(false); window.location.href='/register'; }}>↪ <span>{t('login')}</span></button>
+        <button className="customer-menu-link" onClick={() => { setMenuOpen(false); window.location.href='/restaurants'; }}>📍 <span>{t('restaurants')}</span></button>
+        <a className="customer-menu-link" href={restaurantPhone ? `tel:${restaurantPhone.replace(/[^+0-9]/g, '')}` : undefined} onClick={() => setMenuOpen(false)}>📞 <span>{t('callUs')}</span></a>
+        <button className="customer-menu-link" onClick={() => { setMenuOpen(false); window.location.href='/settings'; }}>⚙️ <span>{t('settings')}</span></button>
         <div className="customer-language-block">
-          <div className="customer-language-title">🌐 Язык</div>
+          <div className="customer-language-title">🌐 {t('language')}</div>
           <div className="customer-language-buttons">
             {[['uz','O‘zbekcha'],['ru','Русский'],['en','English']].map(([code,label]) =>
               <button key={code} className={language === code ? 'active' : ''} onClick={() => { setLanguage(code); setMenuOpen(false); }}>{label}</button>
