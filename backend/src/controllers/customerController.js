@@ -14,8 +14,18 @@ const listCustomers = asyncHandler(async (req, res) => {
       { phone: { $regex: req.query.search, $options: 'i' } }
     ];
   }
-  const customers = await Customer.find(filter).sort({ createdAt: -1 });
-  res.json({ success: true, customers });
+  const customers = await Customer.find(filter).sort({ createdAt: -1 }).lean();
+  const ids = customers.map(c => c._id);
+  const stats = await Order.aggregate([
+    { $match: { customer: { $in: ids } } },
+    { $group: { _id: '$customer', totalOrders: { $sum: 1 }, totalSpent: { $sum: '$total' }, lastOrderAt: { $max: '$createdAt' } } }
+  ]);
+  const byId = new Map(stats.map(s => [String(s._id), s]));
+  const enriched = customers.map(c => {
+    const s = byId.get(String(c._id)) || {};
+    return { ...c, totalOrders: s.totalOrders || 0, totalSpent: s.totalSpent || 0, lastOrderAt: s.lastOrderAt || null };
+  });
+  res.json({ success: true, customers: enriched });
 });
 
 // GET /api/customers/:id
