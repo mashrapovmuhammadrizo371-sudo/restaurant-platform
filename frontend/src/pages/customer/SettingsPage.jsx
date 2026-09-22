@@ -51,7 +51,7 @@ export default function SettingsPage() {
 
   async function saveProfile() {
     if (!/^\+998 \d{2} \d{3} \d{2} \d{2}$/.test(profile.phone)) {
-      setLocationError('Telefon raqami faqat +998 XX XXX XX XX formatida bo\\'lishi kerak.');
+      setLocationError("Telefon raqami faqat +998 XX XXX XX XX formatida bo'lishi kerak.");
       return;
     }
     try {
@@ -73,7 +73,7 @@ export default function SettingsPage() {
       setLocationError('');
       alert('Mijoz saqlandi');
     } catch (err) {
-      setLocationError(err.message || 'Mijozni saqlab bo\\'lmadi.');
+      setLocationError(err.message || "Mijozni saqlab bo'lmadi.");
     }
   }
 
