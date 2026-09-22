@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext.jsx';
 
 const EMPTY = {
   name: '', slug: '', mainColor: '#ff5a1f', phone: '', address: '',
-  telegram: '', instagram: '', description: '', openingHours: '', logoFile: null
+  telegram: '', instagram: '', description: '', openingHours: '', city: 'Андижан', deliveryTimeText: '', deliveryPromoText: '', yandexMapsUrl: '', yandexNavigatorUrl: '', googleMapsUrl: '', logoFile: null
 };
 
 export default function BrandsPage() {
@@ -86,6 +86,30 @@ export default function BrandsPage() {
             <div className="form-group">
               <label className="form-label">Ish vaqti</label>
               <input className="input" value={form.openingHours} onChange={e => setForm({ ...form, openingHours: e.target.value })} placeholder="09:00 - 23:00" />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Shahar</label>
+              <input className="input" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">O‘rtacha yetkazish vaqti</label>
+              <input className="input" value={form.deliveryTimeText} onChange={e => setForm({ ...form, deliveryTimeText: e.target.value })} placeholder="26 мин." />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Yetkazish promo matni</label>
+              <input className="input" value={form.deliveryPromoText} onChange={e => setForm({ ...form, deliveryPromoText: e.target.value })} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Yandex Maps</label>
+              <input className="input" value={form.yandexMapsUrl} onChange={e => setForm({ ...form, yandexMapsUrl: e.target.value })} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Yandex Navigator</label>
+              <input className="input" value={form.yandexNavigatorUrl} onChange={e => setForm({ ...form, yandexNavigatorUrl: e.target.value })} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Google Maps</label>
+              <input className="input" value={form.googleMapsUrl} onChange={e => setForm({ ...form, googleMapsUrl: e.target.value })} />
             </div>
             <div className="form-group">
               <label className="form-label">Telegram</label>
