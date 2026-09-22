@@ -6,6 +6,8 @@ const {
   listCustomers,
   getCustomer,
   updateCustomerStatus,
+  updateCustomer,
+  deleteCustomer,
   leaderboard,
   updateMyProfile,
   addMyAddress,
@@ -27,5 +29,7 @@ router.get('/leaderboard', optionalAuthenticate(), leaderboard);
 router.get('/', authenticate(), requirePermission('customers.manage'), listCustomers);
 router.get('/:id', authenticate(), requirePermission('customers.manage'), getCustomer);
 router.patch('/:id/status', authenticate(), requirePermission('customers.manage'), updateCustomerStatus);
+router.put('/:id', authenticate(), requirePermission('customers.manage'), updateCustomer);
+router.delete('/:id', authenticate(), requirePermission('customers.manage'), deleteCustomer);
 
 module.exports = router;
