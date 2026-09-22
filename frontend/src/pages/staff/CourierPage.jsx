@@ -57,7 +57,7 @@ export default function CourierPage() {
 
   return (
     <div>
-      <div className="card" style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div id="status" className="card" style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <div style={{ fontWeight: 700 }}>Holat</div>
           <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
@@ -71,7 +71,7 @@ export default function CourierPage() {
 
       {error && <div className="error-text">{error}</div>}
 
-      <h3>Buyurtmalarim</h3>
+      <h3 id="orders">Buyurtmalarim</h3>
       {!myOrders.length && <div className="empty-state">Tayinlangan buyurtmalar yo'q</div>}
       {myOrders.map(o => (
         <div key={o._id} className="card" style={{ marginBottom: 10 }}>
@@ -81,7 +81,7 @@ export default function CourierPage() {
           </div>
           <div style={{ fontSize: 13, marginTop: 4 }}>📍 {o.deliveryAddress || "Manzil ko'rsatilmagan"}</div>
           {o.deliveryAddress && (
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
+            <div id="navigation" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
               <button className="btn btn-primary" type="button" onClick={() => openNavigation(o.deliveryAddress)}>
                 🧭 Navigatsiyani ochish
               </button>
