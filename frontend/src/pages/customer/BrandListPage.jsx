@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom';
 import { getBrands } from '../../services/brandService';
 import BrandCard from '../../components/BrandCard.jsx';
 import { useCustomerAuth } from '../../context/CustomerAuthContext.jsx';
+import { useLanguage } from '../../context/LanguageContext.jsx';
 
 export default function BrandListPage() {
   const { customer } = useCustomerAuth();
+  const { t } = useLanguage();
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -20,14 +22,8 @@ export default function BrandListPage() {
   return (
     <div>
       <div className="top-bar">
-        <div>
-          <div style={{ fontWeight: 700 }}>Salom, {customer?.name}! 👋</div>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{customer?.points || 0} ball</div>
-        </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <Link to="/leaderboard" className="btn btn-secondary">🏆</Link>
-          <Link to="/profile" className="btn btn-secondary">👤</Link>
-        </div>
+        <div style={{ fontWeight: 700 }}>{t('welcome')}, {customer?.name}! 👋</div>
+        <Link to="/settings" className="btn btn-secondary">⚙️</Link>
       </div>
 
       <div className="container" style={{ paddingTop: 16 }}>
