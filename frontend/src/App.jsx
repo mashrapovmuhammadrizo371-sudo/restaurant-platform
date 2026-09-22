@@ -1,9 +1,8 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
-import StaffLoginPage from './pages/StaffLoginPage.jsx';
+import AdminGate from './components/AdminGate.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
-import AdminLayout from './layouts/AdminLayout.jsx';
 import DashboardPage from './pages/admin/DashboardPage.jsx';
 import BrandsPage from './pages/admin/BrandsPage.jsx';
 import MenuPage from './pages/admin/MenuPage.jsx';
@@ -23,28 +22,23 @@ import CashierPage from './pages/staff/CashierPage.jsx';
 
 import CustomerProtectedRoute from './components/CustomerProtectedRoute.jsx';
 import CustomerLayout from './layouts/CustomerLayout.jsx';
-import CustomerLoginPage from './pages/customer/CustomerLoginPage.jsx';
 import BrandListPage from './pages/customer/BrandListPage.jsx';
 import BrandMenuPage from './pages/customer/BrandMenuPage.jsx';
 import CartPage from './pages/customer/CartPage.jsx';
 import MyOrdersPage from './pages/customer/MyOrdersPage.jsx';
-import ProfilePage from './pages/customer/ProfilePage.jsx';
-import LeaderboardPage from './pages/customer/LeaderboardPage.jsx';
+import CustomerSettingsPage from './pages/customer/SettingsPage.jsx';
 
 export default function App() {
   return (
     <Routes>
-      {/* -------- Staff -------- */}
-      <Route path="/staff/login" element={<StaffLoginPage />} />
+      {/* -------- Staff / Big Admin --------
+          Single entry point: "/admin" is the shared login page when
+          logged out, and (for boss/admin) the Big Admin panel when
+          logged in — see AdminGate.jsx. Old bookmarks to the previous
+          separate login route still work. */}
+      <Route path="/staff/login" element={<Navigate to="/admin" replace />} />
 
-      <Route
-        path="/admin"
-        element={
-          <ProtectedRoute roles={['boss', 'admin']}>
-            <AdminLayout />
-          </ProtectedRoute>
-        }
-      >
+      <Route path="/admin" element={<AdminGate />}>
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="brands" element={<BrandsPage />} />
         <Route path="menu" element={<MenuPage />} />
@@ -91,10 +85,12 @@ export default function App() {
         }
       />
 
-      {/* -------- Customer -------- */}
-      {/* Name-only entry point. No separate registration page/route. */}
-      <Route path="/login" element={<CustomerLoginPage />} />
-
+      {/* -------- Customer --------
+          No login/registration at all: an anonymous session is created
+          automatically (see CustomerAuthContext). No /login, /register,
+          /profile, or /leaderboard routes — points/leaderboard and the
+          account-based profile are temporarily disabled customer-facing;
+          Settings replaces Profile. */}
       <Route
         element={
           <CustomerProtectedRoute>
@@ -106,8 +102,7 @@ export default function App() {
         <Route path="/brand/:id" element={<BrandMenuPage />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/orders" element={<MyOrdersPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/leaderboard" element={<LeaderboardPage />} />
+        <Route path="/settings" element={<CustomerSettingsPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
