@@ -81,7 +81,7 @@ export default function CashierPage() {
     <div>
       {error && <div className="error-text">{error}</div>}
 
-      <h3 style={{ marginTop: 0 }}>🆕 Yangi buyurtmalar</h3>
+      <h3 id="orders" style={{ marginTop: 0 }}>🆕 Yangi buyurtmalar</h3>
       {!newOrders.length && <div className="empty-state">Yangi buyurtmalar yo'q</div>}
       {newOrders.map(o => (
         <div key={o._id} className="card" style={{ marginBottom: 10 }}>
@@ -104,7 +104,7 @@ export default function CashierPage() {
         </div>
       ))}
 
-      <h3>🚚 Kuryer tayinlash kutilmoqda</h3>
+      <h3 id="courier">🚚 Kuryer tayinlash kutilmoqda</h3>
       {!pendingDelivery.length && <div className="empty-state">Yo'q</div>}
       {pendingDelivery.map(o => (
         <div key={o._id} className="card" style={{ marginBottom: 10 }}>
@@ -121,7 +121,7 @@ export default function CashierPage() {
         </div>
       ))}
 
-      <h3>🍽️ Ofitsiantga yuborish kutilmoqda</h3>
+      <h3 id="waiter">🍽️ Ofitsiantga yuborish kutilmoqda</h3>
       {!pendingTable.length && <div className="empty-state">Yo'q</div>}
       {pendingTable.map(o => (
         <div key={o._id} className="card" style={{ marginBottom: 10 }}>
@@ -137,7 +137,7 @@ export default function CashierPage() {
         </div>
       ))}
 
-      <h3>🪩 Stollar holati</h3>
+      <h3 id="tables">🪩 Stollar holati</h3>
       {!tables.length && <div className="empty-state">Stollar topilmadi</div>}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
         {tables.map(t => (
