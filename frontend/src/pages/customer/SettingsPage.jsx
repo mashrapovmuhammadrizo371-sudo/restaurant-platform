@@ -4,6 +4,19 @@ import { useLanguage } from '../../context/LanguageContext.jsx';
 
 const LANGUAGE_LABELS = { uz: "O'zbek", ru: 'Русский', en: 'English' };
 
+const LEGAL_TEXT = {
+  terms: {
+    uz: "Ushbu platformadan foydalanish orqali siz buyurtma berish, yetkazib berish va to'lov shartlariga rozilik bildirasiz. Narxlar va mahsulot mavjudligi oldindan ogohlantirmasdan o'zgarishi mumkin.",
+    ru: 'Используя эту платформу, вы соглашаетесь с условиями оформления заказа, доставки и оплаты. Цены и наличие товаров могут меняться без предварительного уведомления.',
+    en: 'By using this platform, you agree to the ordering, delivery, and payment terms described here. Prices and item availability may change without prior notice.'
+  },
+  privacy: {
+    uz: "Buyurtma berish uchun taqdim etilgan ma'lumotlar (ism, manzil, telefon raqami) faqat buyurtmangizni bajarish uchun ishlatiladi va uchinchi shaxslarga sotilmaydi.",
+    ru: 'Данные, предоставленные при оформлении заказа (имя, адрес, номер телефона), используются только для выполнения вашего заказа и не передаются третьим лицам.',
+    en: 'Information provided when ordering (name, address, phone number) is used only to fulfill your order and is not sold to third parties.'
+  }
+};
+
 // Customer-side Settings. No account/profile/password here by design —
 // customer registration/login is temporarily removed, so this page only
 // covers what an anonymous visitor actually needs: language, how to
@@ -14,6 +27,7 @@ export default function SettingsPage() {
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [openLegal, setOpenLegal] = useState(null); // null | 'terms' | 'privacy'
 
   useEffect(() => {
     getBrands()
@@ -21,6 +35,10 @@ export default function SettingsPage() {
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
+
+  function toggleLegal(key) {
+    setOpenLegal(prev => (prev === key ? null : key));
+  }
 
   return (
     <div className="container" style={{ paddingTop: 16 }}>
@@ -67,13 +85,36 @@ export default function SettingsPage() {
         <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>{t('paymentMethodsText')}</div>
       </div>
 
-      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <button type="button" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}>
-          📄 {t('termsOfUse')}
+      <div className="card">
+        <button
+          type="button"
+          className="btn btn-secondary"
+          style={{ width: '100%', justifyContent: 'space-between', display: 'flex' }}
+          onClick={() => toggleLegal('terms')}
+        >
+          <span>📄 {t('termsOfUse')}</span>
+          <span>{openLegal === 'terms' ? '−' : '+'}</span>
         </button>
-        <button type="button" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}>
-          🔒 {t('privacyPolicy')}
+        {openLegal === 'terms' && (
+          <div style={{ fontSize: 13, color: 'var(--text-muted)', padding: '10px 4px' }}>
+            {LEGAL_TEXT.terms[language] || LEGAL_TEXT.terms.uz}
+          </div>
+        )}
+
+        <button
+          type="button"
+          className="btn btn-secondary"
+          style={{ width: '100%', justifyContent: 'space-between', display: 'flex', marginTop: 8 }}
+          onClick={() => toggleLegal('privacy')}
+        >
+          <span>🔒 {t('privacyPolicy')}</span>
+          <span>{openLegal === 'privacy' ? '−' : '+'}</span>
         </button>
+        {openLegal === 'privacy' && (
+          <div style={{ fontSize: 13, color: 'var(--text-muted)', padding: '10px 4px' }}>
+            {LEGAL_TEXT.privacy[language] || LEGAL_TEXT.privacy.uz}
+          </div>
+        )}
       </div>
     </div>
   );
