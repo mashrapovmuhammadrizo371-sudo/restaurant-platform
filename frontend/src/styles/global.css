@@ -737,3 +737,20 @@ button { cursor: pointer; }
 .staff-help-step{display:flex;gap:11px;padding:12px 0;border-bottom:1px solid #f0f0f2}.staff-help-step:last-child{border-bottom:0}.staff-help-number{width:28px;height:28px;flex:0 0 28px;border-radius:9px;background:#fde8e8;color:var(--brand-color-dark);display:grid;place-items:center;font-size:12px;font-weight:800}.staff-help-step strong{display:block;font-size:13px}.staff-help-step p{margin:4px 0 0;color:#77747c;font-size:12px;line-height:1.5}
 @media(max-width:900px){.staff-sidebar{width:min(292px,88vw);transform:translateX(-105%);transition:transform .24s ease}.staff-main{margin-left:0}.staff-topbar{height:62px;padding:0 15px}.staff-topbar-user{display:none}.staff-page{padding:20px 15px 30px}.staff-help-button{right:14px;bottom:14px}}
 @media(max-width:560px){.staff-page{padding:16px 12px 28px}.staff-page .card{border-radius:15px}.staff-help-modal{right:14px;bottom:78px}.staff-help-button{width:50px;height:50px}}
+
+
+/* Staff hamburger menus — additive only; existing staff design stays unchanged */
+.staff-topbar-left{display:flex;align-items:center;gap:12px}
+.staff-menu-trigger{width:40px;height:40px;border:1px solid #ececef;border-radius:11px;background:#fff;color:#333;font-size:20px;display:grid;place-items:center;cursor:pointer;box-shadow:0 3px 10px rgba(25,25,30,.04)}
+.staff-menu-trigger:hover{background:#fafafa}
+.staff-menu-backdrop{position:fixed;inset:0;z-index:110;background:rgba(20,20,24,.28);backdrop-filter:blur(3px)}
+.staff-menu-drawer{position:fixed;top:0;left:0;bottom:0;z-index:120;width:min(320px,88vw);display:flex;flex-direction:column;background:#fff;border-right:1px solid #ececef;box-shadow:18px 0 45px rgba(25,25,30,.16);padding:18px 14px}
+.staff-menu-head{display:flex;align-items:center;justify-content:space-between;padding:8px 8px 16px;border-bottom:1px solid #f0f0f2;font-size:16px}
+.staff-menu-head button{width:36px;height:36px;border:0;border-radius:10px;background:#f7f7f8;font-size:23px;cursor:pointer}
+.staff-menu-items{padding-top:12px;overflow:auto}
+.staff-menu-item{display:flex;align-items:center;gap:11px;width:100%;padding:13px 11px;margin-bottom:5px;border-radius:12px;color:#343239;text-decoration:none;font-size:13px;font-weight:700}
+.staff-menu-item:hover{background:#fff0f0;color:var(--brand-color-dark)}
+.staff-menu-item span{width:25px;text-align:center;font-size:17px}
+.staff-menu-bottom{margin-top:auto;padding-top:14px;border-top:1px solid #f0f0f2}
+.staff-menu-logout{width:100%;padding:11px 12px;border:0;border-radius:11px;background:#f6f6f7;color:#6f6d74;font-size:12px;font-weight:750;cursor:pointer}
+.staff-menu-logout:hover{background:#fff0f0;color:var(--brand-color-dark)}
