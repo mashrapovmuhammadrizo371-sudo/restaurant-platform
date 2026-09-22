@@ -2,13 +2,19 @@ import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useCart } from '../context/CartContext.jsx';
 import { useLanguage } from '../context/LanguageContext.jsx';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { getBrands } from '../services/brandService';
 
 export default function CustomerLayout() {
   const { cart } = useCart();
   const { t, language, setLanguage } = useLanguage();
   const itemCount = cart.items.reduce((sum, i) => sum + i.quantity, 0);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [restaurantPhone, setRestaurantPhone] = useState('');
+
+  useEffect(() => {
+    getBrands().then(res => setRestaurantPhone(res.brands?.find(b => b.phone)?.phone || '')).catch(() => {});
+  }, []);
 
   return (
     <div style={{ minHeight: '100vh', paddingBottom: 70 }}>
@@ -21,7 +27,7 @@ export default function CustomerLayout() {
         <div className="customer-menu-head"><strong>Меню</strong><button onClick={() => setMenuOpen(false)}>×</button></div>
         <button className="customer-menu-link" onClick={() => { setMenuOpen(false); window.location.href='/register'; }}>↪ <span>Войти</span></button>
         <button className="customer-menu-link" onClick={() => { setMenuOpen(false); window.location.href='/restaurants'; }}>📍 <span>Рестораны</span></button>
-        <a className="customer-menu-link" href="tel:+998000000000" onClick={() => setMenuOpen(false)}>📞 <span>Позвонить нам</span></a>
+        <a className="customer-menu-link" href={restaurantPhone ? `tel:${restaurantPhone.replace(/[^+0-9]/g, '')}` : undefined} onClick={() => setMenuOpen(false)}>📞 <span>Позвонить нам</span></a>
         <div className="customer-language-block">
           <div className="customer-language-title">🌐 Язык</div>
           <div className="customer-language-buttons">
