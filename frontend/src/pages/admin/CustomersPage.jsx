@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getCustomers } from '../../services/customerService';
+import { getCustomers, updateCustomerStatus } from '../../services/customerService';
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState([]);
@@ -12,6 +12,11 @@ export default function CustomersPage() {
     getCustomers(search).then(res => setCustomers(res.customers)).catch(err => setError(err.message)).finally(() => setLoading(false));
   }
   useEffect(load, [search]);
+
+  async function toggleStatus(customer) {
+    try { await updateCustomerStatus(customer._id, !customer.isActive); load(); }
+    catch (err) { setError(err.message); }
+  }
 
   return (
     <div>
@@ -39,6 +44,9 @@ export default function CustomersPage() {
                 <th style={{ padding: 8 }}>Manzil</th>
                 <th style={{ padding: 8 }}>Ball</th>
                 <th style={{ padding: 8 }}>Buyurtmalar</th>
+                <th style={{ padding: 8 }}>Jami summa</th>
+                <th style={{ padding: 8 }}>Holat</th>
+                <th style={{ padding: 8 }}></th>
               </tr>
             </thead>
             <tbody>
@@ -52,7 +60,10 @@ export default function CustomersPage() {
                   </td>
                   <td style={{ padding: 8 }}>{c.address || '—'}</td>
                   <td style={{ padding: 8 }}>{c.points}</td>
-                  <td style={{ padding: 8 }}>{c.totalOrders}</td>
+                  <td style={{ padding: 8 }}>{c.totalOrders || 0}</td>
+                  <td style={{ padding: 8 }}>{Number(c.totalSpent || 0).toLocaleString()} so‘m</td>
+                  <td style={{ padding: 8 }}><span className="status-badge" style={{ background: c.isActive ? '#e3f4e8' : '#fae5e5', color: c.isActive ? '#2f7048' : '#984040' }}>{c.isActive ? 'Aktiv' : 'Bloklangan'}</span></td>
+                  <td style={{ padding: 8 }}><button className="btn btn-secondary" onClick={() => toggleStatus(c)}>{c.isActive ? 'Bloklash' : 'Blokdan chiqarish'}</button></td>
                 </tr>
               ))}
             </tbody>
