@@ -28,6 +28,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [openLegal, setOpenLegal] = useState(null);
+  const [profileOpen, setProfileOpen] = useState(false);
   const [profile, setProfile] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem('customerProfile')) || { name: '', surname: '', phone: '', address: '', latitude: null, longitude: null };
@@ -137,9 +138,15 @@ export default function SettingsPage() {
 
   return (
     <div className="container" style={{ paddingTop: 16, paddingBottom: 90 }}>
-      <h2 style={{ marginTop: 0 }}>👤 {t('profile')}</h2>
+      <h2 style={{ marginTop: 0 }}>⚙️ {t('settings')}</h2>
 
       <div className="card" style={{ marginBottom: 14 }}>
+        <button type="button" className="btn btn-secondary" style={{ width: '100%', justifyContent: 'space-between', display: 'flex' }} onClick={() => setProfileOpen(prev => !prev)}>
+          <span>👤 {t('profile')}</span><span>{profileOpen ? '−' : '+'}</span>
+        </button>
+      </div>
+
+      {profileOpen && <div className="card" style={{ marginBottom: 14 }}>
         <div className="form-label">{t('profileInfo')}</div>
         <div className="form-group">
           <label className="form-label">{t('name')}</label>
@@ -174,7 +181,7 @@ export default function SettingsPage() {
         <button type="button" className="btn" style={{ width: '100%', marginTop: 8, background: 'transparent', color: 'var(--danger)' }} onClick={clearProfile}>
           {t('clearProfile')}
         </button>
-      </div>
+      </div>}
 
       <div className="card" style={{ marginBottom: 14 }}>
         <div className="form-label" style={{ marginBottom: 8 }}>{t('language')}</div>
