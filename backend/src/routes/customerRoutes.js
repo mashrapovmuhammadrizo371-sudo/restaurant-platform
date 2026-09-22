@@ -5,6 +5,7 @@ const { requirePermission } = require('../middleware/rbac');
 const {
   listCustomers,
   getCustomer,
+  updateCustomerStatus,
   leaderboard,
   updateMyProfile,
   addMyAddress,
@@ -25,5 +26,6 @@ router.get('/leaderboard', optionalAuthenticate(), leaderboard);
 // Staff customer management
 router.get('/', authenticate(), requirePermission('customers.manage'), listCustomers);
 router.get('/:id', authenticate(), requirePermission('customers.manage'), getCustomer);
+router.patch('/:id/status', authenticate(), requirePermission('customers.manage'), updateCustomerStatus);
 
 module.exports = router;
