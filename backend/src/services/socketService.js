@@ -5,6 +5,10 @@ let io = null;
 
 // Rooms used:
 //   brand:<brandId>:operators   — new order alerts for that brand's operators
+//                                 AND cashiers (Kassir now also dispatches
+//                                 new orders — see orderRoutes.js — so it
+//                                 joins the same room rather than a
+//                                 duplicate one)
 //   courier:<userId>            — assignment alerts for one courier
 //   customer:<customerId>       — order status updates for one customer
 //   brand:<brandId>:ofitsiant   — table order updates for waiters of that brand
@@ -35,10 +39,12 @@ function initSocket(httpServer) {
     }
     if (principal.type === 'staff') {
       if (principal.role === 'courier') socket.join(`courier:${principal.sub}`);
-      // Operators/ofitsiants join brand rooms explicitly via a "watch" event,
-      // since one staff account may manage multiple brands.
+      // Operators/cashiers/ofitsiants join brand rooms explicitly via a
+      // "watch" event, since one staff account may manage multiple brands.
       socket.on('watch:brand', brandId => {
-        if (principal.role === 'operator') socket.join(`brand:${brandId}:operators`);
+        if (principal.role === 'operator' || principal.role === 'cashier') {
+          socket.join(`brand:${brandId}:operators`);
+        }
         if (principal.role === 'ofitsiant') socket.join(`brand:${brandId}:ofitsiant`);
       });
     }

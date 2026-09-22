@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getBrands, createBrand, updateBrand, deleteBrand } from '../../services/brandService';
+import { getStaffBrands, createBrand, updateBrand, deleteBrand } from '../../services/brandService';
 import { useAuth } from '../../context/AuthContext.jsx';
 
 const EMPTY = {
@@ -17,7 +17,7 @@ export default function BrandsPage() {
   const [loading, setLoading] = useState(true);
 
   function load() {
-    getBrands().then(res => setBrands(res.brands)).catch(err => setError(err.message)).finally(() => setLoading(false));
+    getStaffBrands().then(res => setBrands(res.brands)).catch(err => setError(err.message)).finally(() => setLoading(false));
   }
   useEffect(load, []);
 
@@ -111,6 +111,8 @@ export default function BrandsPage() {
           </div>
         </form>
       )}
+
+      {!brands.length && <div className="empty-state">Brendlar topilmadi</div>}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 12 }}>
         {brands.map(b => (

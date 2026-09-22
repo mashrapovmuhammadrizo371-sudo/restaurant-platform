@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getStaffTables } from '../../services/tableService';
+import { getStaffTables, setTableStatus } from '../../services/tableService';
 import { getOrders, createStaffTableOrder, updateTableOrderStatus } from '../../services/orderService';
 import { getFoods } from '../../services/foodService';
 import { useAuth } from '../../context/AuthContext.jsx';
@@ -17,6 +17,7 @@ export default function OfitsiantPage() {
   const [paymentMethod, setPaymentMethod] = useState('naqd');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [tableActionId, setTableActionId] = useState(null);
 
   function load() {
     if (!brandId) { setLoading(false); return; }
@@ -72,6 +73,24 @@ export default function OfitsiantPage() {
     try { await updateTableOrderStatus(id, status); load(); } catch (err) { setError(err.message); }
   }
 
+  // Waiter manually marks a table busy ("Band qilish") or free
+  // ("Bo'shatish"). Never changed automatically by the system — see
+  // backend tableController.setTableStatus. This is what makes the table
+  // status Cashier/Big Admin/customers see actually reflect reality.
+  async function handleToggleTable(table) {
+    setError('');
+    setTableActionId(table._id);
+    const nextStatus = table.status === 'available' ? 'busy' : 'available';
+    try {
+      await setTableStatus(table._id, nextStatus);
+      load();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setTableActionId(null);
+    }
+  }
+
   if (!brandId) return <div className="empty-state">Sizga hech qanday brend biriktirilmagan</div>;
   if (loading) return <div className="empty-state"><div className="spinner" style={{ margin: '0 auto' }} /></div>;
 
@@ -82,18 +101,26 @@ export default function OfitsiantPage() {
       {error && <div className="error-text">{error}</div>}
 
       <h3 style={{ marginTop: 0 }}>🪩 Stollar</h3>
+      {!tables.length && <div className="empty-state">Stollar topilmadi</div>}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
         {tables.map(t => (
-          <div
+          <button
             key={t._id}
+            type="button"
             className="status-badge"
+            disabled={tableActionId === t._id}
+            onClick={() => handleToggleTable(t)}
             style={{
+              cursor: 'pointer',
+              border: 'none',
               background: t.status === 'available' ? '#dcfce7' : '#fee2e2',
-              color: t.status === 'available' ? '#166534' : '#991b1b'
+              color: t.status === 'available' ? '#166534' : '#991b1b',
+              opacity: tableActionId === t._id ? 0.6 : 1
             }}
+            title={t.status === 'available' ? "Band qilish uchun bosing" : "Bo'shatish uchun bosing"}
           >
-            Stol #{t.number} · {t.status === 'available' ? "Bo'sh" : 'Band'}
-          </div>
+            Stol #{t.number} · {t.status === 'available' ? "🟢 Bo'sh" : '🔴 Band'}
+          </button>
         ))}
       </div>
 
@@ -145,7 +172,11 @@ export default function OfitsiantPage() {
             {o.items.map((it, idx) => <li key={idx}>{it.name} × {it.quantity}</li>)}
           </ul>
           <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
-            {o.status === 'accepted' && <button className="btn btn-secondary" onClick={() => handleStatusChange(o._id, 'preparing')}>Tayyorlanmoqda</button>}
+            {/* status 'accepted' here means: Cashier accepted the order AND
+                sent it to this waiter (assignWaiter) — clicking this IS the
+                "Qabul qilish" acceptance the spec describes; the Cashier's
+                own order list reflects this same status change immediately. */}
+            {o.status === 'accepted' && <button className="btn btn-primary" onClick={() => handleStatusChange(o._id, 'preparing')}>Qabul qilish</button>}
             {o.status === 'preparing' && <button className="btn btn-secondary" onClick={() => handleStatusChange(o._id, 'ready')}>Tayyor</button>}
             {o.status === 'ready' && <button className="btn btn-primary" onClick={() => handleStatusChange(o._id, 'completed')}>Yakunlash</button>}
           </div>

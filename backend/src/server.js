@@ -6,6 +6,7 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 
+const { requireEnv } = require('./config/validateEnv');
 const connectDB = require('./config/db');
 const { initSocket } = require('./services/socketService');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
@@ -21,6 +22,7 @@ const customerRoutes = require('./routes/customerRoutes');
 const promoCodeRoutes = require('./routes/promoCodeRoutes');
 const employeeRoutes = require('./routes/employeeRoutes');
 const courierRoutes = require('./routes/courierRoutes');
+const waiterRoutes = require('./routes/waiterRoutes');
 
 const app = express();
 
@@ -52,6 +54,7 @@ app.use('/api/customers', customerRoutes);
 app.use('/api/promocodes', promoCodeRoutes);
 app.use('/api/employees', employeeRoutes);
 app.use('/api/couriers', courierRoutes);
+app.use('/api/waiters', waiterRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
@@ -59,6 +62,11 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 5000;
 
 async function start() {
+  // Fail fast and loud if required config (JWT_SECRET, MONGO_URI) is
+  // missing, instead of booting "successfully" and crashing confusingly
+  // on the first request that actually needs it. See config/validateEnv.js.
+  requireEnv();
+
   await connectDB();
 
   const httpServer = http.createServer(app);

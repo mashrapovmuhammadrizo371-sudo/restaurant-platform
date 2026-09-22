@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const orderItemSchema = require('./OrderItem');
+const { isValidUzPhone } = require('../utils/phoneValidator');
 
 const DELIVERY_STATUSES = ['accepted', 'delivering', 'delivered', 'rejected'];
 const TABLE_STATUSES = ['accepted', 'preparing', 'ready', 'completed', 'rejected'];
@@ -25,6 +26,23 @@ const orderSchema = new mongoose.Schema(
 
     // delivery-specific
     deliveryAddress: { type: String, default: null },
+    // Contact number for the courier to reach the customer. Collected at
+    // checkout regardless of whether the customer has a phone on their
+    // account (customers can now enter with just a name — see
+    // authController.customerGuest — so the account itself may have no
+    // phone at all). Required for delivery orders; always exactly
+    // "+998 XX XXX XX XX".
+    contactPhone: {
+      type: String,
+      default: null,
+      validate: {
+        validator: function validateContactPhone(v) {
+          if (this.orderType !== 'delivery') return true;
+          return isValidUzPhone(v);
+        },
+        message: () => 'contactPhone must be in the exact format +998 XX XXX XX XX'
+      }
+    },
 
     // table-specific
     table: { type: mongoose.Schema.Types.ObjectId, ref: 'Table', default: null },

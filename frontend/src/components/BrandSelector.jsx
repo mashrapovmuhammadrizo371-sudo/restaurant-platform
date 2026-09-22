@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { getBrands } from '../services/brandService';
+import { getStaffBrands } from '../services/brandService';
 
+// Staff-only brand picker (used across the admin/staff panel: Menu,
+// Banners, Tables, PromoCodes, Brands). Uses getStaffBrands() (staffApi)
+// specifically so a non-boss Admin only ever sees brands they're actually
+// assigned to — see brandService.js for why the plain customer-facing
+// getBrands() must not be used here.
 export default function BrandSelector({ value, onChange }) {
   const [brands, setBrands] = useState([]);
 
   useEffect(() => {
-    getBrands().then(res => {
+    getStaffBrands().then(res => {
       setBrands(res.brands);
       if (!value && res.brands.length) onChange(res.brands[0]._id);
     });

@@ -20,3 +20,9 @@ export function updateTable(id, data) {
 export function deleteTable(id) {
   return staffApi.delete(`/tables/${id}`);
 }
+
+// Waiter-only (see backend tableController.setTableStatus) — marks a
+// table busy/free without needing the admin tables.manage permission.
+export function setTableStatus(id, status) {
+  return staffApi.put(`/tables/${id}/status`, { status });
+}

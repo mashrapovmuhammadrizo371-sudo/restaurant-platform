@@ -2,37 +2,29 @@ import React, { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 
-const NAV_BY_ROLE = {
-  boss: [
-    { to: '/admin/dashboard', label: '📊 Dashboard' },
-    { to: '/admin/brands', label: '🏪 Brendlar' },
-    { to: '/admin/menu', label: '🍽️ Menyu' },
-    { to: '/admin/banners', label: '🖼️ Bannerlar' },
-    { to: '/admin/tables', label: '🪑 Stollar' },
-    { to: '/admin/orders', label: '📋 Buyurtmalar' },
-    { to: '/admin/customers', label: '👥 Mijozlar' },
-    { to: '/admin/promocodes', label: '🎟️ Promokodlar' },
-    { to: '/admin/employees', label: '👨‍💼 Employees' },
-    { to: '/admin/settings', label: '⚙️ Settings' }
-  ],
-  admin: [
-    { to: '/admin/dashboard', label: '📊 Dashboard' },
-    { to: '/admin/brands', label: '🏪 Brendlar' },
-    { to: '/admin/menu', label: '🍽️ Menyu' },
-    { to: '/admin/banners', label: '🖼️ Bannerlar' },
-    { to: '/admin/tables', label: '🪑 Stollar' },
-    { to: '/admin/orders', label: '📋 Buyurtmalar' },
-    { to: '/admin/customers', label: '👥 Mijozlar' },
-    { to: '/admin/promocodes', label: '🎟️ Promokodlar' },
-    { to: '/admin/employees', label: '👨‍💼 Employees' },
-    { to: '/admin/settings', label: '⚙️ Settings' }
-  ]
-};
+// Uzbek terminology per product spec (section 28): Buyurtmalar, Brendlar,
+// Menyu, Stollar, Ishchilar, Sozlamalar, Ruxsatlar, etc.
+const NAV_ITEMS = [
+  { to: '/admin/dashboard', label: '📊 Boshqaruv paneli' },
+  { to: '/admin/brands', label: '🏪 Brendlar' },
+  { to: '/admin/menu', label: '🍽️ Menyu' },
+  { to: '/admin/banners', label: '🖼️ Bannerlar' },
+  { to: '/admin/tables', label: '🪑 Stollar' },
+  { to: '/admin/orders', label: '📋 Buyurtmalar' },
+  { to: '/admin/customers', label: '👥 Mijozlar' },
+  { to: '/admin/promocodes', label: '🎟️ Promokodlar' },
+  // Roles & Permissions ("Ruxsatlar") are managed per-employee on this same
+  // page (see EmployeesPage.jsx) rather than a separate page, since a
+  // permission only ever means something in the context of one employee's
+  // account — kept as one nav entry rather than two pages that would
+  // just link back to each other.
+  { to: '/admin/employees', label: "👨‍💼 Ishchilar / Ruxsatlar" },
+  { to: '/admin/settings', label: '⚙️ Sozlamalar' }
+];
 
 export default function AdminLayout() {
   const { user, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const navItems = NAV_BY_ROLE[user?.role] || [];
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
@@ -53,7 +45,7 @@ export default function AdminLayout() {
           🍔 Boshqaruv paneli
         </div>
         <nav style={{ display: 'flex', flexDirection: 'column', padding: '0 8px' }}>
-          {navItems.map(item => (
+          {NAV_ITEMS.map(item => (
             <NavLink
               key={item.to}
               to={item.to}

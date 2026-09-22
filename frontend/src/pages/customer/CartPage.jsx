@@ -5,6 +5,7 @@ import { useCustomerAuth } from '../../context/CustomerAuthContext.jsx';
 import { getTables } from '../../services/tableService';
 import { validatePromoCode } from '../../services/promoCodeService';
 import { createOrder } from '../../services/orderService';
+import { isValidUzPhone, formatUzPhoneInput, UZ_PHONE_PLACEHOLDER } from '../../utils/phone.js';
 
 const PAYMENT_LABELS = { naqd: 'Naqd', karta: 'Karta', online: 'Onlayn' };
 
@@ -19,6 +20,10 @@ export default function CartPage() {
 
   const [orderType, setOrderType] = useState('delivery');
   const [deliveryAddress, setDeliveryAddress] = useState(defaultAddress);
+  // Customers can enter the app with just a name (no phone on the
+  // account), so a contact number for the courier is collected here
+  // instead — required for delivery orders only.
+  const [contactPhone, setContactPhone] = useState('');
   const [tables, setTables] = useState([]);
   const [tableId, setTableId] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('naqd');
@@ -53,6 +58,10 @@ export default function CartPage() {
       setError('Yetkazib berish manzilini kiriting');
       return;
     }
+    if (orderType === 'delivery' && !isValidUzPhone(contactPhone)) {
+      setError("Bog'lanish uchun telefon raqamini +998 XX XXX XX XX shaklida kiriting");
+      return;
+    }
     if (orderType === 'table' && !tableId) {
       setError('Stolni tanlang');
       return;
@@ -65,7 +74,7 @@ export default function CartPage() {
         orderType,
         items: cart.items.map(i => ({ food: i.food._id, quantity: i.quantity })),
         paymentMethod,
-        ...(orderType === 'delivery' ? { deliveryAddress } : { tableId }),
+        ...(orderType === 'delivery' ? { deliveryAddress, contactPhone } : { tableId }),
         ...(promoApplied ? { promoCode: promoApplied.code } : {})
       };
       await createOrder(payload);
@@ -131,15 +140,28 @@ export default function CartPage() {
         </div>
 
         {orderType === 'delivery' ? (
-          <div className="form-group">
-            <label className="form-label">Manzil</label>
-            <input
-              className="input"
-              value={deliveryAddress}
-              onChange={e => setDeliveryAddress(e.target.value)}
-              placeholder="Yetkazib berish manzili"
-            />
-          </div>
+          <>
+            <div className="form-group">
+              <label className="form-label">Manzil</label>
+              <input
+                className="input"
+                value={deliveryAddress}
+                onChange={e => setDeliveryAddress(e.target.value)}
+                placeholder="Yetkazib berish manzili"
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Bog'lanish uchun telefon</label>
+              <input
+                className="input"
+                placeholder={UZ_PHONE_PLACEHOLDER}
+                value={contactPhone}
+                onChange={e => setContactPhone(formatUzPhoneInput(e.target.value))}
+                inputMode="numeric"
+                maxLength={17}
+              />
+            </div>
+          </>
         ) : (
           <div className="form-group">
             <label className="form-label">Stol</label>

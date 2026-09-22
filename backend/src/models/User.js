@@ -1,11 +1,22 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const { ROLES, PERMISSIONS } = require('../config/roles');
+const { isValidUzPhone } = require('../utils/phoneValidator');
 
 const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
-    phone: { type: String, trim: true },
+    // Optional (login/password is the real credential, not phone), but
+    // when provided must be the exact "+998 XX XXX XX XX" format — no
+    // normalization, same rule as Customer.phone. See
+    // backend/src/utils/phoneValidator.js.
+    phone: {
+      type: String,
+      validate: {
+        validator: v => v === undefined || v === null || v === '' || isValidUzPhone(v),
+        message: () => 'Phone number must be in the exact format +998 XX XXX XX XX'
+      }
+    },
     login: { type: String, required: true, unique: true, trim: true, lowercase: true },
     passwordHash: { type: String, required: true, select: false },
     role: {
