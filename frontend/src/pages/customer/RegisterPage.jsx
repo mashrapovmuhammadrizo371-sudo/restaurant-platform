@@ -101,6 +101,12 @@ export default function RegisterPage() {
         {error && <div className="error-text" style={{ marginBottom: 12 }}>{error}</div>}
         <button className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>{loading ? 'Сохранение...' : 'Зарегистрироваться'}</button>
       </form>
+      <div style={{ textAlign: 'center', marginTop: 18, paddingTop: 16, borderTop: '1px solid var(--border)', fontSize: 14 }}>
+        <span style={{ color: 'var(--text-muted)' }}>У меня уже есть аккаунт</span>{' '}
+        <button type="button" className="btn" style={{ padding: 0, background: 'transparent', color: 'var(--primary)', fontWeight: 700 }} onClick={() => navigate('/login')}>
+          Войти
+        </button>
+      </div>
     </div>
   </div>;
 }
