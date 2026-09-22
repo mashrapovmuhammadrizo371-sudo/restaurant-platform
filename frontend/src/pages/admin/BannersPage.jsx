@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import BrandSelector from '../../components/BrandSelector.jsx';
-import api from '../../services/api';
+import { getBanners, createBanner, updateBanner, deleteBanner } from '../../services/bannerService';
 
 export default function BannersPage() {
   const [brand, setBrand] = useState(null);
@@ -13,7 +13,7 @@ export default function BannersPage() {
   function load() {
     if (!brand) return;
     setLoading(true);
-    api.get('/banners', { params: { brand } })
+    getBanners(brand)
       .then(res => setBanners(res.banners))
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
@@ -25,12 +25,8 @@ export default function BannersPage() {
     e.preventDefault();
     if (!file) return setError('Rasm tanlang');
     setError('');
-    const fd = new FormData();
-    fd.append('brand', brand);
-    fd.append('title', title);
-    fd.append('image', file);
     try {
-      await api.post('/banners', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      await createBanner({ brand, title, imageFile: file });
       setTitle('');
       setFile(null);
       load();
@@ -40,14 +36,22 @@ export default function BannersPage() {
   }
 
   async function toggleActive(banner) {
-    await api.put(`/banners/${banner._id}`, { isActive: !banner.isActive });
-    load();
+    try {
+      await updateBanner(banner._id, { isActive: !banner.isActive });
+      load();
+    } catch (err) {
+      setError(err.message);
+    }
   }
 
   async function handleDelete(id) {
-    if (!confirm("Ushbu bannerni o'chirishga ishonchingiz komilmi?")) return;
-    await api.delete(`/banners/${id}`);
-    load();
+    if (!window.confirm("Ushbu bannerni o'chirishga ishonchingiz komilmi?")) return;
+    try {
+      await deleteBanner(id);
+      load();
+    } catch (err) {
+      setError(err.message);
+    }
   }
 
   return (
@@ -70,7 +74,8 @@ export default function BannersPage() {
         <button className="btn btn-primary">Qo'shish</button>
       </form>
 
-      {loading && <div className="spinner" />}
+      {!brand && <div className="empty-state">Brendni tanlang</div>}
+      {loading && <div className="empty-state"><div className="spinner" style={{ margin: '0 auto' }} /></div>}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12 }}>
         {banners.map(b => (
@@ -83,8 +88,8 @@ export default function BannersPage() {
             </div>
           </div>
         ))}
-        {!loading && banners.length === 0 && <div className="empty-state">Bannerlar yo'q</div>}
+        {!loading && brand && banners.length === 0 && <div className="empty-state">Bannerlar yo'q</div>}
       </div>
     </div>
   );
-            }
+}
