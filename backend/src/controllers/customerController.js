@@ -47,6 +47,44 @@ const updateCustomerStatus = asyncHandler(async (req, res) => {
   res.json({ success: true, customer });
 });
 
+
+// PUT /api/customers/:id — staff edit customer
+const updateCustomer = asyncHandler(async (req, res) => {
+  const customer = await Customer.findById(req.params.id).select('+passwordHash');
+  if (!customer) throw new ApiError(404, 'Customer not found');
+  const { name, surname, phone, address } = req.body;
+
+  if (name !== undefined) {
+    const value = String(name).trim();
+    if (!value) throw new ApiError(400, 'Name is required');
+    customer.name = value;
+  }
+  if (surname !== undefined) customer.surname = String(surname).trim();
+  if (address !== undefined) customer.address = String(address).trim();
+  if (phone !== undefined) {
+    const value = String(phone).trim();
+    if (value && !isValidUzPhone(value)) throw new ApiError(400, 'Phone number must be in the exact format +998 XX XXX XX XX');
+    if (value) {
+      const existing = await Customer.findOne({ phone: value, _id: { $ne: customer._id } }).select('_id');
+      if (existing) throw new ApiError(409, 'This phone number is already used by another customer');
+    }
+    customer.phone = value || undefined;
+  }
+
+  await customer.save();
+  const safe = customer.toObject();
+  delete safe.passwordHash;
+  res.json({ success: true, customer: safe });
+});
+
+// DELETE /api/customers/:id — staff permanently deletes customer
+const deleteCustomer = asyncHandler(async (req, res) => {
+  const customer = await Customer.findById(req.params.id);
+  if (!customer) throw new ApiError(404, 'Customer not found');
+  await Customer.deleteOne({ _id: customer._id });
+  res.json({ success: true, message: 'Customer deleted' });
+});
+
 // GET /api/customers/leaderboard?limit=20  (public) — top customers by loyalty points
 const leaderboard = asyncHandler(async (req, res) => {
   const limit = Math.min(Number(req.query.limit) || 20, 100);
@@ -125,6 +163,8 @@ module.exports = {
   listCustomers,
   getCustomer,
   updateCustomerStatus,
+  updateCustomer,
+  deleteCustomer,
   leaderboard,
   updateMyProfile,
   addMyAddress,
