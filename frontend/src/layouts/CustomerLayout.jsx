@@ -33,7 +33,7 @@ export default function CustomerLayout() {
           <div className="customer-language-title">🌐 Язык</div>
           <div className="customer-language-buttons">
             {[['uz','O‘zbekcha'],['ru','Русский'],['en','English']].map(([code,label]) =>
-              <button key={code} className={language === code ? 'active' : ''} onClick={() => setLanguage(code)}>{label}</button>
+              <button key={code} className={language === code ? 'active' : ''} onClick={() => { setLanguage(code); setMenuOpen(false); }}>{label}</button>
             )}
           </div>
         </div>
