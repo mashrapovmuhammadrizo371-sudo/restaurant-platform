@@ -49,7 +49,7 @@ const updateBrand = asyncHandler(async (req, res) => {
 
   const updatable = [
     'name', 'slug', 'mainColor', 'phone', 'address',
-    'telegram', 'instagram', 'description', 'openingHours', 'isActive'
+    'telegram', 'instagram', 'description', 'openingHours', 'city', 'deliveryTimeText', 'deliveryPromoText', 'yandexMapsUrl', 'yandexNavigatorUrl', 'googleMapsUrl', 'isActive'
   ];
   for (const key of updatable) {
     if (req.body[key] !== undefined) brand[key] = req.body[key];
