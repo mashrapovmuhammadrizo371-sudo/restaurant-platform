@@ -8,6 +8,8 @@ const morgan = require('morgan');
 
 const { requireEnv } = require('./config/validateEnv');
 const connectDB = require('./config/db');
+const User = require('./models/User');
+const { ROLES } = require('./config/roles');
 const { initSocket } = require('./services/socketService');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
 
@@ -61,6 +63,45 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
+async function ensureBossAccount() {
+  const login = (process.env.BOSS_LOGIN || 'boss').trim().toLowerCase();
+  const password = process.env.BOSS_PASSWORD;
+  const name = (process.env.BOSS_NAME || 'Super Admin').trim();
+
+  if (!password) {
+    console.warn('[server] BOSS_PASSWORD is not set; Boss account was not created/synced.');
+    return;
+  }
+
+  const passwordHash = await User.hashPassword(password);
+  const boss = await User.findOne({ login }).select('+passwordHash');
+
+  if (!boss) {
+    await User.create({
+      name,
+      login,
+      passwordHash,
+      role: ROLES.BOSS,
+      brands: [],
+      permissions: [],
+      isActive: true
+    });
+    console.log('[server] Boss account created from environment variables.');
+    return;
+  }
+
+  // Environment credentials are the source of truth for the Boss account.
+  // This also fixes an account that was created earlier with an unknown password.
+  boss.name = name;
+  boss.passwordHash = passwordHash;
+  boss.role = ROLES.BOSS;
+  boss.brands = [];
+  boss.permissions = [];
+  boss.isActive = true;
+  await boss.save();
+  console.log('[server] Boss account credentials synced from environment variables.');
+}
+
 async function start() {
   // Fail fast and loud if required config (JWT_SECRET, MONGO_URI) is
   // missing, instead of booting "successfully" and crashing confusingly
@@ -68,6 +109,11 @@ async function start() {
   requireEnv();
 
   await connectDB();
+
+  // Render Free has no interactive Shell, so create/sync the Boss account
+  // automatically from the Boss environment variables at startup.
+  // This keeps the production login usable without running a separate seed job.
+  await ensureBossAccount();
 
   const httpServer = http.createServer(app);
   initSocket(httpServer);
