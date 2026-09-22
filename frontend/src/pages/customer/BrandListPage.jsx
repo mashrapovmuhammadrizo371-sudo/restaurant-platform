@@ -22,8 +22,7 @@ export default function BrandListPage() {
   return (
     <div>
       <div className="top-bar">
-        <div style={{ fontWeight: 700 }}>{t('welcome')}, {customer?.name}! 👋</div>
-        <Link to="/settings" className="btn btn-secondary">⚙️</Link>
+        <div style={{ fontWeight: 800, fontSize: 18 }}>Brendlar</div>
       </div>
 
       <div className="container" style={{ paddingTop: 16 }}>
