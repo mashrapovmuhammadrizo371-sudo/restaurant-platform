@@ -1,30 +1,68 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
 
-// Lightweight single-page layout for the four operational staff roles
-// (operator, courier, ofitsiant, cashier), which don't need the full
-// multi-section admin sidebar — each of them lives on exactly one page.
 export default function StaffLayout({ title, children }) {
   const { user, logout } = useAuth();
+  const initial = (user?.name || 'I').slice(0, 1).toUpperCase();
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
-      <header
-        style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '14px 20px', background: '#fff', borderBottom: '1px solid var(--border)',
-          position: 'sticky', top: 0, zIndex: 10
-        }}
-      >
-        <div style={{ fontWeight: 700 }}>{title}</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{user?.name}</span>
-          <button className="btn btn-secondary" onClick={logout}>Chiqish</button>
+    <div className="staff-shell">
+      <aside className="staff-sidebar">
+        <div className="staff-brand">
+          <div className="staff-brand-mark">R</div>
+          <div>
+            <div className="staff-brand-title">Restaurant</div>
+            <div className="staff-brand-subtitle">Ishchi paneli</div>
+          </div>
         </div>
-      </header>
-      <main style={{ padding: 20, maxWidth: 900, margin: '0 auto' }}>
-        {children}
-      </main>
+
+        <div className="staff-sidebar-label">ISHCHI PANELI</div>
+        <div className="staff-role-card">
+          <div className="staff-role-icon">◉</div>
+          <div>
+            <strong>{title}</strong>
+            <span>{user?.role || 'staff'}</span>
+          </div>
+        </div>
+
+        <div className="staff-sidebar-note">
+          <span className="staff-online-dot" />
+          Tizimga ulangan
+        </div>
+
+        <div className="staff-sidebar-footer">
+          <div className="staff-user-card">
+            <div className="staff-user-avatar">{initial}</div>
+            <div className="staff-user-info">
+              <strong>{user?.name || 'Ishchi'}</strong>
+              <span>{user?.role || 'staff'}</span>
+            </div>
+          </div>
+          <button className="staff-logout" onClick={logout}>
+            <span>↪</span> Chiqish
+          </button>
+        </div>
+      </aside>
+
+      <div className="staff-main">
+        <header className="staff-topbar">
+          <div>
+            <div className="staff-topbar-title">{title}</div>
+            <div className="staff-topbar-subtitle">Restaurant · Ishchi paneli</div>
+          </div>
+          <div className="staff-topbar-user">
+            <div className="staff-user-avatar">{initial}</div>
+            <div>
+              <strong>{user?.name || 'Ishchi'}</strong>
+              <small>{user?.role || 'staff'}</small>
+            </div>
+          </div>
+        </header>
+
+        <main className="staff-page">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }
