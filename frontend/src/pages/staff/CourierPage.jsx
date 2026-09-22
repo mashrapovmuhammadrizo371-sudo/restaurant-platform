@@ -39,6 +39,18 @@ export default function CourierPage() {
   async function handleStart(id) { try { await startDelivery(id); load(); } catch (err) { setError(err.message); } }
   async function handleComplete(id) { try { await completeDelivery(id); load(); } catch (err) { setError(err.message); } }
 
+  function openNavigation(address) {
+    if (!address) return;
+    const encoded = encodeURIComponent(address);
+    window.open('https://www.google.com/maps/dir/?api=1&destination=' + encoded, '_blank', 'noopener,noreferrer');
+  }
+
+  function openYandexMaps(address) {
+    if (!address) return;
+    const encoded = encodeURIComponent(address);
+    window.open('https://yandex.com/maps/?text=' + encoded, '_blank', 'noopener,noreferrer');
+  }
+
   const myOrders = orders.filter(o => ['accepted', 'delivering'].includes(o.status));
 
   if (loading) return <div className="empty-state"><div className="spinner" style={{ margin: '0 auto' }} /></div>;
@@ -67,7 +79,17 @@ export default function CourierPage() {
             <strong>{o.orderNumber}</strong>
             <StatusBadge status={o.status} />
           </div>
-          <div style={{ fontSize: 13, marginTop: 4 }}>{o.deliveryAddress}</div>
+          <div style={{ fontSize: 13, marginTop: 4 }}>📍 {o.deliveryAddress || "Manzil ko'rsatilmagan"}</div>
+          {o.deliveryAddress && (
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
+              <button className="btn btn-primary" type="button" onClick={() => openNavigation(o.deliveryAddress)}>
+                🧭 Navigatsiyani ochish
+              </button>
+              <button className="btn btn-secondary" type="button" onClick={() => openYandexMaps(o.deliveryAddress)}>
+                🗺️ Yandex Maps
+              </button>
+            </div>
+          )}
           {/* contactPhone is collected at checkout regardless of whether
               the customer's account has a phone (customers can enter with
               just a name), so it's the reliable number to call — prefer
