@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { getBrands } from '../../services/brandService';
 import { useLanguage } from '../../context/LanguageContext.jsx';
+import api from '../../services/api';
+import { useCustomerAuth } from '../../context/CustomerAuthContext.jsx';
 
 const LANGUAGE_LABELS = { uz: "O'zbek", ru: 'Русский', en: 'English' };
 
@@ -17,22 +19,20 @@ const LEGAL_TEXT = {
   }
 };
 
-// Customer-side Settings. No account/profile/password here by design —
-// customer registration/login is temporarily removed, so this page only
-// covers what an anonymous visitor actually needs: language, how to
-// reach each brand/restaurant, delivery/payment info, and the legal
-// pages. Replaces the old account-based ProfilePage.
+// Customer-side Settings. Profile data is saved to the current anonymous
+// customer account so the main admin Customers panel can see it.
 export default function SettingsPage() {
   const { language, setLanguage, t, available } = useLanguage();
+  const { customer } = useCustomerAuth();
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [openLegal, setOpenLegal] = useState(null);
   const [profile, setProfile] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem('customerProfile')) || { name: '', phone: '', address: '', latitude: null, longitude: null };
+      return JSON.parse(localStorage.getItem('customerProfile')) || { name: '', surname: '', phone: '', address: '', latitude: null, longitude: null };
     } catch {
-      return { name: '', phone: '', address: '', latitude: null, longitude: null };
+      return { name: '', surname: '', phone: '', address: '', latitude: null, longitude: null };
     }
   });
   const [locationLoading, setLocationLoading] = useState(false);
@@ -49,8 +49,32 @@ export default function SettingsPage() {
     setProfile(prev => ({ ...prev, [key]: value }));
   }
 
-  function saveProfile() {
-    localStorage.setItem('customerProfile', JSON.stringify(profile));
+  async function saveProfile() {
+    if (!/^\+998 \d{2} \d{3} \d{2} \d{2}$/.test(profile.phone)) {
+      setLocationError('Telefon raqami faqat +998 XX XXX XX XX formatida bo\\'lishi kerak.');
+      return;
+    }
+    try {
+      const res = await api.put('/customers/me', {
+        name: profile.name,
+        surname: profile.surname,
+        phone: profile.phone,
+        address: profile.address
+      });
+      const saved = {
+        ...profile,
+        name: res.customer.name || '',
+        surname: res.customer.surname || '',
+        phone: res.customer.phone || '',
+        address: res.customer.address || ''
+      };
+      localStorage.setItem('customerProfile', JSON.stringify(saved));
+      setProfile(saved);
+      setLocationError('');
+      alert('Mijoz saqlandi');
+    } catch (err) {
+      setLocationError(err.message || 'Mijozni saqlab bo\\'lmadi.');
+    }
   }
 
   function detectLocation() {
@@ -101,7 +125,7 @@ export default function SettingsPage() {
   }
 
   function clearProfile() {
-    const empty = { name: '', phone: '', address: '', latitude: null, longitude: null };
+    const empty = { name: '', surname: '', phone: '', address: '', latitude: null, longitude: null };
     localStorage.removeItem('customerProfile');
     setProfile(empty);
     setLocationError('');
@@ -122,8 +146,12 @@ export default function SettingsPage() {
           <input className="input" value={profile.name} onChange={e => updateProfile('name', e.target.value)} placeholder={t('namePlaceholder')} />
         </div>
         <div className="form-group">
+          <label className="form-label">{t('surname')}</label>
+          <input className="input" value={profile.surname} onChange={e => updateProfile('surname', e.target.value)} placeholder={t('surnamePlaceholder')} />
+        </div>
+        <div className="form-group">
           <label className="form-label">{t('phone')}</label>
-          <input className="input" type="tel" value={profile.phone} onChange={e => updateProfile('phone', e.target.value)} placeholder="+998 90 123 45 67" />
+          <input className="input" type="tel" value={profile.phone} onChange={e => updateProfile('phone', e.target.value)} placeholder="+998 XX XXX XX XX" inputMode="tel" />
         </div>
         <div className="form-group">
           <label className="form-label">{t('address')}</label>
