@@ -75,7 +75,7 @@ const customerGuest = asyncHandler(async (req, res) => {
 // POST /api/auth/customer/register  (kept for future use — not currently
 // linked from the frontend, which uses customerGuest instead)
 const customerRegister = asyncHandler(async (req, res) => {
-  const { name, phone, password } = req.body;
+  const { name, surname, phone, password, address } = req.body;
   if (!name || !phone || !password) {
     throw new ApiError(400, 'Name, phone and password are required');
   }
@@ -89,7 +89,7 @@ const customerRegister = asyncHandler(async (req, res) => {
   if (existing) throw new ApiError(409, 'A customer with this phone number already exists');
 
   const passwordHash = await Customer.hashPassword(password);
-  const customer = await Customer.create({ name, phone: trimmedPhone, passwordHash });
+  const customer = await Customer.create({ name, surname: surname ? String(surname).trim() : '', phone: trimmedPhone, address: address ? String(address).trim() : '', passwordHash });
 
   const token = signToken({ sub: customer._id.toString(), type: 'customer' });
   const safeCustomer = customer.toObject();
