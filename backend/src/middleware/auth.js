@@ -26,14 +26,17 @@ function authenticate() {
       if (decoded.type === 'staff') {
         const user = await User.findById(decoded.sub);
         if (!user || !user.isActive) {
-          throw new ApiError(401, 'Account not found or disabled');
+          throw new ApiError(401, 'Account not found');
         }
         req.user = user;
         req.principalType = 'staff';
       } else if (decoded.type === 'customer') {
         const customer = await Customer.findById(decoded.sub);
-        if (!customer || !customer.isActive) {
-          throw new ApiError(401, 'Account not found or disabled');
+        if (!customer) {
+          throw new ApiError(401, 'Account not found');
+        }
+        if (!customer.isActive) {
+          throw new ApiError(403, 'Customer account is blocked');
         }
         req.customer = customer;
         req.principalType = 'customer';
