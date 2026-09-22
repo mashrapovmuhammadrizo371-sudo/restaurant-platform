@@ -10,6 +10,7 @@ const listCustomers = asyncHandler(async (req, res) => {
   if (req.query.search) {
     filter.$or = [
       { name: { $regex: req.query.search, $options: 'i' } },
+      { surname: { $regex: req.query.search, $options: 'i' } },
       { phone: { $regex: req.query.search, $options: 'i' } }
     ];
   }
@@ -21,6 +22,18 @@ const listCustomers = asyncHandler(async (req, res) => {
 const getCustomer = asyncHandler(async (req, res) => {
   const customer = await Customer.findById(req.params.id);
   if (!customer) throw new ApiError(404, 'Customer not found');
+  res.json({ success: true, customer });
+});
+
+
+
+// PATCH /api/customers/:id/status — staff customer management
+const updateCustomerStatus = asyncHandler(async (req, res) => {
+  const customer = await Customer.findById(req.params.id);
+  if (!customer) throw new ApiError(404, 'Customer not found');
+  if (typeof req.body.isActive !== 'boolean') throw new ApiError(400, 'isActive must be boolean');
+  customer.isActive = req.body.isActive;
+  await customer.save();
   res.json({ success: true, customer });
 });
 
@@ -101,6 +114,7 @@ const myOrders = asyncHandler(async (req, res) => {
 module.exports = {
   listCustomers,
   getCustomer,
+  updateCustomerStatus,
   leaderboard,
   updateMyProfile,
   addMyAddress,
