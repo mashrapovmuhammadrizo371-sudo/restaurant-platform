@@ -12,6 +12,12 @@ const brandSchema = new mongoose.Schema(
     instagram: { type: String, default: '' },
     description: { type: String, default: '' },
     openingHours: { type: String, default: '' },
+    city: { type: String, default: 'Андижан' },
+    deliveryTimeText: { type: String, default: '' },
+    deliveryPromoText: { type: String, default: '' },
+    yandexMapsUrl: { type: String, default: '' },
+    yandexNavigatorUrl: { type: String, default: '' },
+    googleMapsUrl: { type: String, default: '' },
     isActive: { type: Boolean, default: true }
   },
   { timestamps: true }
