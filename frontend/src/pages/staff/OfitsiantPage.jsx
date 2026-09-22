@@ -100,7 +100,7 @@ export default function OfitsiantPage() {
     <div>
       {error && <div className="error-text">{error}</div>}
 
-      <h3 style={{ marginTop: 0 }}>🪩 Stollar</h3>
+      <h3 id="tables" style={{ marginTop: 0 }}>🪩 Stollar</h3>
       {!tables.length && <div className="empty-state">Stollar topilmadi</div>}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
         {tables.map(t => (
@@ -124,7 +124,7 @@ export default function OfitsiantPage() {
         ))}
       </div>
 
-      <div className="card" style={{ marginBottom: 16 }}>
+      <div id="table-order" className="card" style={{ marginBottom: 16 }}>
         <div style={{ fontWeight: 700, marginBottom: 8 }}>Yangi stol buyurtmasi</div>
         <select className="input" value={selectedTable} onChange={e => setSelectedTable(e.target.value)}>
           <option value="">Stolni tanlang</option>
@@ -160,7 +160,7 @@ export default function OfitsiantPage() {
         </button>
       </div>
 
-      <h3>Faol stol buyurtmalari</h3>
+      <h3 id="orders">Faol stol buyurtmalari</h3>
       {!activeOrders.length && <div className="empty-state">Faol buyurtmalar yo'q</div>}
       {activeOrders.map(o => (
         <div key={o._id} className="card" style={{ marginBottom: 10 }}>
