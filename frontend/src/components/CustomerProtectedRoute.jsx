@@ -13,6 +13,10 @@ export default function CustomerProtectedRoute({ children }) {
     return <div className="empty-state"><div className="spinner" style={{ margin: '0 auto' }} /></div>;
   }
 
+  if (error === 'blocked') {
+    return <div className="empty-state" style={{ flexDirection: 'column', gap: 12 }}><div style={{ fontWeight: 750 }}>Аккаунт заблокирован</div><div style={{ color: 'var(--text-muted)' }}>Обратитесь в ресторан для разблокировки.</div></div>;
+  }
+
   if (!customer || error) {
     return (
       <div className="empty-state" style={{ flexDirection: 'column', gap: 12 }}>
