@@ -28,6 +28,7 @@ export default function CustomerLayout() {
         <button className="customer-menu-link" onClick={() => { setMenuOpen(false); window.location.href='/register'; }}>↪ <span>Войти</span></button>
         <button className="customer-menu-link" onClick={() => { setMenuOpen(false); window.location.href='/restaurants'; }}>📍 <span>Рестораны</span></button>
         <a className="customer-menu-link" href={restaurantPhone ? `tel:${restaurantPhone.replace(/[^+0-9]/g, '')}` : undefined} onClick={() => setMenuOpen(false)}>📞 <span>Позвонить нам</span></a>
+        <button className="customer-menu-link" onClick={() => { setMenuOpen(false); window.location.href='/settings'; }}>⚙️ <span>Настройки</span></button>
         <div className="customer-language-block">
           <div className="customer-language-title">🌐 Язык</div>
           <div className="customer-language-buttons">
@@ -41,7 +42,6 @@ export default function CustomerLayout() {
         <NavLink to="/" end className={({ isActive }) => 'bottom-nav-item' + (isActive ? ' active' : '')}><span>🏠</span><span>{t('home')}</span></NavLink>
         <NavLink to="/orders" className={({ isActive }) => 'bottom-nav-item' + (isActive ? ' active' : '')}><span>📋</span><span>{t('myOrders')}</span></NavLink>
         <NavLink to="/cart" className={({ isActive }) => 'bottom-nav-item' + (isActive ? ' active' : '')}><span style={{ position: 'relative' }}>🛒{itemCount > 0 && <span className="cart-badge">{itemCount}</span>}</span><span>{t('cart')}</span></NavLink>
-        <NavLink to="/settings" className={({ isActive }) => 'bottom-nav-item' + (isActive ? ' active' : '')}><span>⚙️</span><span>{t('settings')}</span></NavLink>
       </nav>
     </div>
   );
