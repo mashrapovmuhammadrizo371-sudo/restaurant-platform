@@ -43,7 +43,7 @@ export default function OperatorPage() {
     <div>
       {error && <div className="error-text">{error}</div>}
 
-      <h3 style={{ marginTop: 0 }}>🆕 Yangi buyurtmalar</h3>
+      <h3 id="orders" style={{ marginTop: 0 }}>🆕 Yangi buyurtmalar</h3>
       {!newOrders.length && <div className="empty-state">Yangi buyurtmalar yo'q</div>}
       {newOrders.map(o => (
         <div key={o._id} className="card" style={{ marginBottom: 10 }}>
@@ -70,7 +70,7 @@ export default function OperatorPage() {
         </div>
       ))}
 
-      <h3>🚚 Yetkazib berish nazorati</h3>
+      <h3 id="delivery">🚚 Yetkazib berish nazorati</h3>
       {!activeDeliveries.length && <div className="empty-state">Faol yetkazib berish yo'q</div>}
       {activeDeliveries.map(o => (
         <div key={o._id} className="card" style={{ marginBottom: 10 }}>
@@ -81,7 +81,7 @@ export default function OperatorPage() {
           <div style={{ fontSize: 13, marginTop: 4 }}>{o.deliveryAddress}</div>
           <div style={{ fontSize: 13 }}>📞 {o.contactPhone || o.customer?.phone || "noma'lum"}</div>
           {!o.courier && o.status === 'accepted' && (
-            <select className="input" style={{ marginTop: 8 }} onChange={e => handleAssign(o._id, e.target.value)} defaultValue="">
+            <select id="courier" className="input" style={{ marginTop: 8 }} onChange={e => handleAssign(o._id, e.target.value)} defaultValue="">
               <option value="" disabled>Kuryer tayinlash</option>
               {couriers.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
             </select>
