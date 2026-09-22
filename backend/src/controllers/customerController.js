@@ -2,6 +2,7 @@ const asyncHandler = require('../utils/asyncHandler');
 const ApiError = require('../utils/ApiError');
 const Customer = require('../models/Customer');
 const Order = require('../models/Order');
+const { isValidUzPhone } = require('../utils/phoneValidator');
 
 // GET /api/customers  (staff only — admin/boss customer management)
 const listCustomers = asyncHandler(async (req, res) => {
@@ -37,8 +38,33 @@ const leaderboard = asyncHandler(async (req, res) => {
 
 // PUT /api/customers/me
 const updateMyProfile = asyncHandler(async (req, res) => {
-  const { name } = req.body;
-  if (name !== undefined) req.customer.name = name;
+  const { name, surname, phone, address } = req.body;
+
+  if (name !== undefined) {
+    const trimmedName = String(name).trim();
+    if (!trimmedName) throw new ApiError(400, 'Name is required');
+    req.customer.name = trimmedName;
+  }
+
+  if (surname !== undefined) req.customer.surname = String(surname).trim();
+
+  if (phone !== undefined) {
+    const trimmedPhone = String(phone).trim();
+    if (!isValidUzPhone(trimmedPhone)) {
+      throw new ApiError(400, 'Phone number must be in the exact format +998 XX XXX XX XX');
+    }
+
+    const existing = await Customer.findOne({
+      phone: trimmedPhone,
+      _id: { $ne: req.customer._id }
+    }).select('_id');
+
+    if (existing) throw new ApiError(409, 'This phone number is already used by another customer');
+    req.customer.phone = trimmedPhone;
+  }
+
+  if (address !== undefined) req.customer.address = String(address).trim();
+
   await req.customer.save();
   res.json({ success: true, customer: req.customer });
 });
