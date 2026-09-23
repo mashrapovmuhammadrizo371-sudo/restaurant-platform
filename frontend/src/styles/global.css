@@ -1,28 +1,10 @@
 
-/* Brand menu header refinements */
-.brand-menu-top-bar {
-  justify-content: flex-start !important;
-  gap: 10px;
+/* Ensure customer side menu is hidden until hamburger is pressed */
+.customer-side-menu {
+  visibility: hidden;
+  pointer-events: none;
 }
-.brand-menu-top-bar > div[style*="font-weight"] {
-  flex: 1;
-  text-align: center;
-}
-.brand-back-button {
-  min-width: auto !important;
-  width: auto;
-  min-height: 36px !important;
-  height: 36px;
-  padding: 7px 10px !important;
-  border-radius: 10px !important;
-  font-size: 12px !important;
-  flex-shrink: 0;
-}
-@media(max-width:560px){
-  .brand-back-button {
-    min-height: 34px !important;
-    height: 34px;
-    padding: 6px 9px !important;
-    font-size: 11.5px !important;
-  }
+.customer-side-menu.open {
+  visibility: visible;
+  pointer-events: auto;
 }
