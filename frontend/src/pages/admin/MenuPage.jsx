@@ -5,6 +5,17 @@ import { getFoods, createFood, updateFood, deleteFood } from '../../services/foo
 
 const EMPTY_FOOD = { category: '', name: '', description: '', ingredients: '', price: '', imageFile: null };
 
+function formatPrice(value) {
+  const digits = String(value ?? '').replace(/\D/g, '');
+  if (!digits) return '';
+  return Number(digits).toLocaleString('en-US').replace(/,/g, ' ');
+}
+
+function priceToNumber(value) {
+  const digits = String(value ?? '').replace(/\D/g, '');
+  return digits ? Number(digits) : 0;
+}
+
 export default function MenuPage() {
   const [brandId, setBrandId] = useState(null);
   const [categories, setCategories] = useState([]);
@@ -41,7 +52,7 @@ export default function MenuPage() {
       name: f.name,
       description: f.description,
       ingredients: f.ingredients,
-      price: f.price,
+      price: formatPrice(f.price),
       imageFile: null
     });
   }
@@ -54,8 +65,9 @@ export default function MenuPage() {
     e.preventDefault();
     setError('');
     try {
-      if (editingFoodId) await updateFood(editingFoodId, foodForm);
-      else await createFood({ ...foodForm, brand: brandId });
+      const payload = { ...foodForm, price: priceToNumber(foodForm.price) };
+      if (editingFoodId) await updateFood(editingFoodId, payload);
+      else await createFood({ ...payload, brand: brandId });
       resetFoodForm();
       load();
     } catch (err) { setError(err.message); }
@@ -115,7 +127,15 @@ export default function MenuPage() {
               </div>
               <div className="form-group">
                 <label className="form-label">Narxi (so'm)</label>
-                <input type="number" className="input" value={foodForm.price} onChange={e => setFoodForm({ ...foodForm, price: e.target.value })} required min={0} />
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  className="input"
+                  value={foodForm.price}
+                  onChange={e => setFoodForm({ ...foodForm, price: formatPrice(e.target.value) })}
+                  placeholder="50 000"
+                  required
+                />
               </div>
               <div className="form-group">
                 <label className="form-label">Rasm</label>
