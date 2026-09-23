@@ -790,3 +790,17 @@ button { cursor: pointer; }
   .customer-app-content,
   .customer-page-content { padding-top: 14px; }
 }
+
+
+/* Customer top content sits below the fixed MASHRAPOV title */
+.customer-brand-title + .customer-menu-trigger + .customer-menu-backdrop + .customer-side-menu + .bottom-nav { margin-top: 0; }
+.top-bar {
+  padding-top: 30px !important;
+  min-height: 88px;
+}
+@media(max-width:560px){
+  .top-bar {
+    padding-top: 26px !important;
+    min-height: 80px;
+  }
+}
