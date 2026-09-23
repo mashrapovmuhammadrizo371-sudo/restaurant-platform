@@ -4,6 +4,16 @@ import { useAuth } from '../../context/AuthContext.jsx';
 import { formatUzPhoneInput, UZ_PHONE_PLACEHOLDER } from '../../utils/phone.js';
 import LocationInput from '../../components/LocationInput.jsx';
 
+function formatOpeningHours(value) {
+  const raw = String(value || '').replace(/\D/g, '').slice(0, 8);
+  let formatted = raw;
+  if (raw.length > 2) formatted = raw.slice(0, 2) + ':' + raw.slice(2, 4);
+  if (raw.length > 4) formatted += ' - ';
+  if (raw.length > 6) formatted += raw.slice(4, 6) + ':' + raw.slice(6, 8);
+  return formatted;
+}
+
+
 const EMPTY = {
   name: '', slug: '', mainColor: '#ff5a1f', phone: '', address: '',
   telegram: '', instagram: '', description: '', openingHours: '', city: 'Андижан', deliveryTimeText: '', deliveryPromoText: '', yandexMapsUrl: '', yandexNavigatorUrl: '', googleMapsUrl: '', logoFile: null
@@ -87,7 +97,7 @@ export default function BrandsPage() {
             </div>
             <div className="form-group">
               <label className="form-label">Ish vaqti</label>
-              <input className="input" value={form.openingHours} onChange={e => setForm({ ...form, openingHours: e.target.value })} placeholder="09:00 - 23:00" />
+              <input className="input" inputMode="numeric" maxLength={13} value={form.openingHours} onChange={e => setForm({ ...form, openingHours: formatOpeningHours(e.target.value) })} placeholder="09:00 - 23:00" />
             </div>
             <div className="form-group">
               <label className="form-label">Shahar</label>
