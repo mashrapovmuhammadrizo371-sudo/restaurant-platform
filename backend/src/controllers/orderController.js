@@ -176,6 +176,19 @@ const listOrders = asyncHandler(async (req, res) => {
   if (req.query.status) filter.status = req.query.status;
   if (req.query.orderType) filter.orderType = req.query.orderType;
 
+  // Optional report date. The dashboard sends a calendar date in Uzbekistan time.
+  // Convert the selected local day to UTC boundaries before querying MongoDB.
+  if (req.query.date) {
+    const date = String(req.query.date);
+    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(date)) {
+      throw new ApiError(400, 'Invalid date. Expected YYYY-MM-DD');
+    }
+    const start = new Date(date + 'T00:00:00+05:00');
+    const end = new Date(date + 'T00:00:00+05:00');
+    end.setUTCDate(end.getUTCDate() + 1);
+    filter.createdAt = { $gte: start, $lt: end };
+  }
+
   if (req.user.role !== ROLES.BOSS) filter.brand = { $in: req.user.brands };
   if (req.user.role === ROLES.COURIER) filter.courier = req.user._id;
   if (req.user.role === ROLES.OFITSIANT) filter.ofitsiant = req.user._id;
