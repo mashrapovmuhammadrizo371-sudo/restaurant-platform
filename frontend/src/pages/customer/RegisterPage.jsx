@@ -18,34 +18,58 @@ export default function RegisterPage() {
   useEffect(() => {
     if (!recaptchaSiteKey || !recaptchaRef.current) return;
 
+    let cancelled = false;
+    let timer = null;
+
     const renderRecaptcha = () => {
-      if (!window.grecaptcha || !recaptchaRef.current || recaptchaWidgetRef.current !== null) return;
-      recaptchaWidgetRef.current = window.grecaptcha.render(recaptchaRef.current, {
-        sitekey: recaptchaSiteKey,
-        theme: 'light',
-        callback: token => setRecaptchaToken(token),
-        'expired-callback': () => setRecaptchaToken(''),
-        'error-callback': () => setRecaptchaToken('')
-      });
+      if (
+        cancelled ||
+        !window.grecaptcha ||
+        !recaptchaRef.current ||
+        recaptchaWidgetRef.current !== null
+      ) return;
+
+      try {
+        recaptchaWidgetRef.current = window.grecaptcha.render(recaptchaRef.current, {
+          sitekey: recaptchaSiteKey,
+          theme: 'light',
+          callback: token => setRecaptchaToken(token),
+          'expired-callback': () => setRecaptchaToken(''),
+          'error-callback': () => setRecaptchaToken('')
+        });
+      } catch (err) {
+        // The script may still be initializing; retry shortly.
+        timer = window.setTimeout(renderRecaptcha, 300);
+      }
     };
 
-    if (window.grecaptcha) {
-      window.grecaptcha.ready(renderRecaptcha);
-      return;
-    }
+    const waitForRecaptcha = () => {
+      if (cancelled) return;
+      if (window.grecaptcha) {
+        window.grecaptcha.ready(renderRecaptcha);
+        return;
+      }
+      timer = window.setTimeout(waitForRecaptcha, 300);
+    };
 
     const existingScript = document.querySelector('script[src^="https://www.google.com/recaptcha/api.js"]');
-    if (existingScript) {
-      existingScript.addEventListener('load', renderRecaptcha);
-      return () => existingScript.removeEventListener('load', renderRecaptcha);
+
+    if (!existingScript) {
+      const script = document.createElement('script');
+      script.src = 'https://www.google.com/recaptcha/api.js?render=explicit';
+      script.async = true;
+      script.defer = true;
+      script.onload = waitForRecaptcha;
+      script.onerror = () => setError('reCAPTCHA yuklanmadi. Internet yoki domen sozlamasini tekshiring.');
+      document.head.appendChild(script);
     }
 
-    const script = document.createElement('script');
-    script.src = 'https://www.google.com/recaptcha/api.js?render=explicit';
-    script.async = true;
-    script.defer = true;
-    script.onload = renderRecaptcha;
-    document.head.appendChild(script);
+    waitForRecaptcha();
+
+    return () => {
+      cancelled = true;
+      if (timer) window.clearTimeout(timer);
+    };
   }, [recaptchaSiteKey]);
 
   function formatPhone(value) {
