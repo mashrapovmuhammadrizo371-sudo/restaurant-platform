@@ -189,7 +189,11 @@ const listOrders = asyncHandler(async (req, res) => {
     filter.createdAt = { $gte: start, $lt: end };
   }
 
-  if (req.user.role !== ROLES.BOSS) filter.brand = { $in: req.user.brands };
+  // Cashier is the central order hub and must see orders from all brands.
+  // Other non-Boss staff remain scoped to their assigned brands.
+  if (req.user.role !== ROLES.BOSS && req.user.role !== ROLES.CASHIER) {
+    filter.brand = { $in: req.user.brands };
+  }
   if (req.user.role === ROLES.COURIER) filter.courier = req.user._id;
   if (req.user.role === ROLES.OFITSIANT) filter.ofitsiant = req.user._id;
 
