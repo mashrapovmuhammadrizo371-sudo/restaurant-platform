@@ -19,6 +19,7 @@ export default function CustomerLayout() {
   return (
     <div style={{ minHeight: '100vh', paddingBottom: 70 }}>
       <Outlet />
+      <div className="customer-brand-title">MASHRAPOV</div>
       <button className={'customer-menu-trigger ' + (menuOpen ? 'open' : '')} onClick={() => setMenuOpen(v => !v)} aria-label="Menu">
         <span></span><span></span><span></span>
       </button>
