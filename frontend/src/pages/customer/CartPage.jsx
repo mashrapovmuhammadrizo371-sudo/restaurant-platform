@@ -210,7 +210,8 @@ export default function CartPage() {
               <input
                 className="input"
                 placeholder={UZ_PHONE_PLACEHOLDER}
-                value={contactPhone}
+                value={contactPhone || '+998 '}
+                onFocus={() => { if (!contactPhone) setContactPhone('+998 '); }}
                 onChange={e => setContactPhone(formatUzPhoneInput(e.target.value))}
                 inputMode="numeric"
                 maxLength={17}
