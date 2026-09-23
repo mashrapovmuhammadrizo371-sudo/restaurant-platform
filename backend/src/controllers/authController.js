@@ -7,7 +7,7 @@ const User = require('../models/User');
 const Customer = require('../models/Customer');
 
 const PHONE_FORMAT_ERROR = 'Phone number must be in the exact format +998 XX XXX XX XX';
-const DEFAULT_GUEST_NAME = 'Mehmon';
+const DEFAULT_GUEST_NAME = 'Mehmon';\n\nasync function verifyRecaptcha(token, remoteIp) {\n  const secret = process.env.RECAPTCHA_SECRET_KEY;\n  if (!secret) throw new ApiError(500, 'reCAPTCHA server key is not configured');\n  if (!token) throw new ApiError(400, 'Please complete the reCAPTCHA verification');\n\n  const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },\n    body: new URLSearchParams({\n      secret,\n      response: token,\n      ...(remoteIp ? { remoteip: remoteIp } : {})\n    })\n  });\n\n  if (!response.ok) throw new ApiError(502, 'reCAPTCHA verification service is unavailable');\n  const result = await response.json();\n  if (!result.success) throw new ApiError(400, 'reCAPTCHA verification failed');\n}
 
 // POST /api/auth/staff/login
 // Single shared login page for all staff. Role is detected automatically
