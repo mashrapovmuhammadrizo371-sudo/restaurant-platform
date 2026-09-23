@@ -5,14 +5,11 @@ const User = require('../models/User');
 let io = null;
 
 // Rooms used:
-//   brand:<brandId>:operators   — new order alerts for that brand's operators
-//                                 AND cashiers (Kassir now also dispatches
-//                                 new orders — see orderRoutes.js — so it
-//                                 joins the same room rather than a
-//                                 duplicate one)
+//   brand:<brandId>:operators   — new order alerts for operators
+//   brand:<brandId>:ofitsiant   — table order updates for waiters of that brand
+//   staff:<userId>              — direct staff notifications
 //   courier:<userId>            — assignment alerts for one courier
 //   customer:<customerId>       — order status updates for one customer
-//   brand:<brandId>:ofitsiant   — table order updates for waiters of that brand
 
 function initSocket(httpServer) {
   io = new Server(httpServer, {
@@ -22,12 +19,12 @@ function initSocket(httpServer) {
   io.use((socket, next) => {
     try {
       const token = socket.handshake.auth?.token;
-      if (!token) return next(); // allow anonymous connections (customer w/o login browsing)
+      if (!token) return next();
       const decoded = verifyToken(token);
       socket.data.principal = decoded;
       next();
     } catch (err) {
-      next(); // treat as anonymous rather than hard-failing the socket
+      next();
     }
   });
 
@@ -41,17 +38,19 @@ function initSocket(httpServer) {
     }
 
     if (principal.type === 'staff') {
-      if (principal.role === 'courier') socket.join(`courier:${principal.sub}`);
+      // Every staff member gets a private room. This is the authoritative
+      // path for cashier/waiter/courier assignment notifications.
+      socket.join(`staff:${principal.sub}`);
 
-      // Load the staff member server-side and join ONLY the brand rooms
-      // they are actually assigned to. This makes new-order delivery
-      // reliable even if the frontend emits watch:brand before the socket
-      // has fully connected/reconnected.
+      if (principal.role === 'courier') {
+        socket.join(`courier:${principal.sub}`);
+      }
+
       User.findById(principal.sub).select('role brands isActive').lean()
         .then(user => {
           if (!user || !user.isActive) return;
           const brandIds = (user.brands || []).map(id => String(id));
-          if (user.role === 'boss') return;
+
           if (user.role === 'operator' || user.role === 'cashier') {
             brandIds.forEach(brandId => socket.join(`brand:${brandId}:operators`));
           }
@@ -61,15 +60,15 @@ function initSocket(httpServer) {
         })
         .catch(() => {});
 
-      // Keep the explicit watch event for compatibility with the existing
-      // frontend; the server-side join above is the authoritative path.
       socket.on('watch:brand', brandId => {
         const id = String(brandId || '');
         if (!id) return;
         if (principal.role === 'operator' || principal.role === 'cashier') {
           socket.join(`brand:${id}:operators`);
         }
-        if (principal.role === 'ofitsiant') socket.join(`brand:${id}:ofitsiant`);
+        if (principal.role === 'ofitsiant') {
+          socket.join(`brand:${id}:ofitsiant`);
+        }
       });
     }
   });
