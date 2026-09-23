@@ -11,18 +11,10 @@ const notify = {
   newOrderToOperators(brandId, order) {
     emit(`brand:${brandId}:operators`, 'order:new', order);
 
-    // Cashier is the central order hub, so every active cashier receives
-    // the new-order event regardless of which brand the order belongs to.
-    // Operators remain brand-scoped through the operator room below.
-    User.find({ role: 'cashier', isActive: true }).select('_id').lean()
-      .then(cashiers => {
-        cashiers.forEach(user => emit(`staff:${user._id}`, 'order:new', order));
-      })
-      .catch(() => {});
-
-    // Keep operators brand-scoped as before.
+    // Direct fallback for cashiers/operators assigned to this brand.
+    // This does not depend on the frontend's brand-watch event.
     User.find({
-      role: 'operator',
+      role: { $in: ['cashier', 'operator'] },
       brands: brandId,
       isActive: true
     }).select('_id').lean()
