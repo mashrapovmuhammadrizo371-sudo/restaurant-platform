@@ -36,9 +36,33 @@ export default function CartPage() {
   const [locationLoading, setLocationLoading] = useState(false);
 
   useEffect(() => {
-    if (orderType === 'table' && cart.brand) {
-      getTables(cart.brand).then(res => setTables(res.tables.filter(t => t.status === 'available')));
+    let cancelled = false;
+
+    async function loadTables() {
+      if (orderType !== 'table' || !cart.brand) {
+        setTables([]);
+        return;
+      }
+
+      try {
+        const res = await getTables(cart.brand);
+        if (cancelled) return;
+
+        // Customer API returns { tables }, but keep this tolerant of an
+        // array response so the selector never silently becomes empty.
+        const list = Array.isArray(res) ? res : (Array.isArray(res?.tables) ? res.tables : []);
+        setTables(list.filter(t => t && t.isActive !== false && t.status === 'available'));
+        setError('');
+      } catch (err) {
+        if (!cancelled) {
+          setTables([]);
+          setError(err.message || 'Stollarni yuklab bo\'lmadi');
+        }
+      }
     }
+
+    loadTables();
+    return () => { cancelled = true; };
   }, [orderType, cart.brand]);
 
   async function applyPromo() {
