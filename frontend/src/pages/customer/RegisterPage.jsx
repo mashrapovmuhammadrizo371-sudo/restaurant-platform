@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCustomerAuth } from '../../context/CustomerAuthContext.jsx';
+import { formatUzPhoneInput, UZ_PHONE_PLACEHOLDER } from '../../utils/phone.js';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -72,16 +73,6 @@ export default function RegisterPage() {
     };
   }, [recaptchaSiteKey]);
 
-  function formatPhone(value) {
-    const digits = value.replace(/\D/g, '').replace(/^998/, '').slice(0, 9);
-    let formatted = '+998';
-    if (digits.length) formatted += ' ' + digits.slice(0, 2);
-    if (digits.length > 2) formatted += ' ' + digits.slice(2, 5);
-    if (digits.length > 5) formatted += ' ' + digits.slice(5, 7);
-    if (digits.length > 7) formatted += ' ' + digits.slice(7, 9);
-    return formatted;
-  }
-
   async function detectAddress() {
     if (!navigator.geolocation) {
       setError('Bu qurilmada joylashuvni aniqlash qo‘llab-quvvatlanmaydi.');
@@ -139,7 +130,7 @@ export default function RegisterPage() {
       <form onSubmit={submit}>
         <div className="form-group"><label className="form-label">Имя</label><input className="input" value={form.name} onChange={e => update('name', e.target.value)} required /></div>
         <div className="form-group"><label className="form-label">Фамилия</label><input className="input" value={form.surname} onChange={e => update('surname', e.target.value)} required /></div>
-        <div className="form-group"><label className="form-label">Номер телефона</label><input className="input" type="tel" inputMode="numeric" placeholder="+998 XX XXX XX XX" value={form.phone || '+998 '} onFocus={() => { if (!form.phone) update('phone', '+998 '); }} onChange={e => update('phone', formatPhone(e.target.value))} required /></div>
+        <div className="form-group"><label className="form-label">Номер телефона</label><input className="input" type="tel" inputMode="numeric" placeholder={UZ_PHONE_PLACEHOLDER} value={form.phone || '+998 '} onFocus={() => { if (!form.phone) update('phone', '+998 '); }} onChange={e => update('phone', formatUzPhoneInput(e.target.value))} required /></div>
         <div className="form-group">
           <label className="form-label">Адрес</label>
           <div style={{ position: 'relative' }}>
