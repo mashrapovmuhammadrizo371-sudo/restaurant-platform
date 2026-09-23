@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCustomerAuth } from '../../context/CustomerAuthContext.jsx';
 import { formatUzPhoneInput, UZ_PHONE_PLACEHOLDER } from '../../utils/phone.js';
+import LocationInput from '../../components/LocationInput.jsx';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -133,22 +134,7 @@ export default function RegisterPage() {
         <div className="form-group"><label className="form-label">Номер телефона</label><input className="input" type="tel" inputMode="numeric" placeholder={UZ_PHONE_PLACEHOLDER} value={form.phone || '+998 '} onFocus={() => { if (!form.phone) update('phone', '+998 '); }} onChange={e => update('phone', formatUzPhoneInput(e.target.value))} required /></div>
         <div className="form-group">
           <label className="form-label">Адрес</label>
-          <div style={{ position: 'relative' }}>
-            <input className="input" style={{ paddingRight: 48 }} value={form.address} onChange={e => update('address', e.target.value)} placeholder="Введите адрес" />
-            <button
-              type="button"
-              onClick={detectAddress}
-              disabled={locationLoading}
-              title="Определить местоположение"
-              aria-label="Определить местоположение"
-              style={{
-                position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
-                width: 34, height: 34, border: '1px solid var(--border)', borderRadius: 10,
-                background: 'var(--surface)', cursor: locationLoading ? 'wait' : 'pointer',
-                display: 'grid', placeItems: 'center', fontSize: 17, padding: 0
-              }}
-            >{locationLoading ? '⏳' : '📍'}</button>
-          </div>
+          <LocationInput value={form.address} onChange={address => update('address', address)} placeholder="Введите адрес" />
         </div>
         <div className="form-group" style={{ marginTop: 18, marginBottom: 18 }}><div ref={recaptchaRef} /></div>
         <div className="form-group"><label className="form-label">Пароль</label><input className="input" type="password" value={form.password} onChange={e => update('password', e.target.value)} required /></div>
