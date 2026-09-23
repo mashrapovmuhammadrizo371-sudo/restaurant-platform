@@ -17,16 +17,6 @@ function getTodayKey() {
   }).format(new Date());
 }
 
-function getDateKey(dateStr) {
-  if (!dateStr) return '';
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: TASHKENT_TZ,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  }).format(new Date(dateStr));
-}
-
 function formatReportDate(dateKey) {
   if (!dateKey) return '';
   const [year, month, day] = dateKey.split('-');
