@@ -122,7 +122,8 @@ export default function EmployeesPage() {
             <input
               className="input"
               placeholder={UZ_PHONE_PLACEHOLDER}
-              value={form.phone}
+              value={form.phone || '+998 '}
+              onFocus={() => { if (!form.phone) setForm({ ...form, phone: '+998 ' }); }}
               onChange={e => setForm({ ...form, phone: formatUzPhoneInput(e.target.value) })}
               inputMode="numeric"
               maxLength={17}
