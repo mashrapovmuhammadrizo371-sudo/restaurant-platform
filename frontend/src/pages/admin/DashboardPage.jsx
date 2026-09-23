@@ -1,134 +1,88 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { getOrders } from '../../services/orderService';
+import { getCustomers } from '../../services/customerService';
 import { getEmployees } from '../../services/employeeService';
 import { getBrands } from '../../services/brandService';
 import { getStaffTables } from '../../services/tableService';
 import { useAuth } from '../../context/AuthContext.jsx';
 
+const PAYMENT_LABELS = { naqd: 'Naqd', karta: 'Karta', online: 'Onlayn' };
 const FINAL_STATUSES = ['delivered', 'completed', 'rejected'];
-const TASHKENT_TZ = 'Asia/Tashkent';
 
-function getTodayKey() {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: TASHKENT_TZ,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  }).format(new Date());
-}
-
-function formatReportDate(dateKey) {
-  if (!dateKey) return '';
-  const [year, month, day] = dateKey.split('-');
-  return new Intl.DateTimeFormat('uz-UZ', {
-    timeZone: TASHKENT_TZ,
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  }).format(new Date(Date.UTC(Number(year), Number(month) - 1, Number(day))));
+function isToday(dateStr) {
+  const d = new Date(dateStr);
+  const now = new Date();
+  return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
 }
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const [orders, setOrders] = useState([]);
+  const [customerCount, setCustomerCount] = useState(0);
   const [employees, setEmployees] = useState([]);
   const [brands, setBrands] = useState([]);
   const [tables, setTables] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(getTodayKey());
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
-    setError('');
-
-    Promise.all([getOrders({ date: selectedDate }), getEmployees(), getBrands()])
-      .then(async ([ordersRes, employeesRes, brandsRes]) => {
-        setOrders(ordersRes.orders || []);
-        setEmployees(employeesRes.employees || []);
-        setBrands(brandsRes.brands || []);
-
+    Promise.all([getOrders(), getCustomers(), getEmployees(), getBrands()])
+      .then(async ([ordersRes, customersRes, employeesRes, brandsRes]) => {
+        setOrders(ordersRes.orders);
+        setCustomerCount(customersRes.customers.length);
+        setEmployees(employeesRes.employees);
+        setBrands(brandsRes.brands);
+        // Table occupancy across every brand this admin can see.
         const tableResults = await Promise.all(
-          (brandsRes.brands || []).map(b => getStaffTables(b._id).catch(() => ({ tables: [] })))
+          brandsRes.brands.map(b => getStaffTables(b._id).catch(() => ({ tables: [] })))
         );
-        setTables(tableResults.flatMap(r => r.tables || []));
+        setTables(tableResults.flatMap(r => r.tables));
       })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
-  }, [selectedDate]);
-
-  const reportOrders = orders;
-
-  const reportCustomerCount = useMemo(() => {
-    const ids = new Set();
-    reportOrders.forEach(order => {
-      const id = order.customer?._id || order.customer || order.customerId;
-      if (id) ids.add(String(id));
-    });
-    return ids.size;
-  }, [reportOrders]);
+  }, []);
 
   if (loading) return <div className="empty-state"><div className="spinner" style={{ margin: '0 auto' }} /></div>;
 
-  const revenue = reportOrders
-    .filter(o => o.paymentStatus === 'paid')
-    .reduce((sum, o) => sum + Number(o.total || 0), 0);
-
-  const completedOrders = reportOrders.filter(
-    o => FINAL_STATUSES.includes(o.status) && o.status !== 'rejected'
-  );
-  const pendingOrders = reportOrders.filter(o => !FINAL_STATUSES.includes(o.status));
-  const deliveryOrders = reportOrders.filter(o => o.orderType === 'delivery');
-  const tableOrders = reportOrders.filter(o => o.orderType === 'table');
+  const revenue = orders.filter(o => o.paymentStatus === 'paid').reduce((sum, o) => sum + o.total, 0);
+  const ordersToday = orders.filter(o => isToday(o.createdAt));
+  const completedOrders = orders.filter(o => FINAL_STATUSES.includes(o.status) && o.status !== 'rejected');
+  const pendingOrders = orders.filter(o => !FINAL_STATUSES.includes(o.status));
+  const deliveryOrders = orders.filter(o => o.orderType === 'delivery');
+  const tableOrders = orders.filter(o => o.orderType === 'table');
   const couriers = employees.filter(e => e.role === 'courier' && e.isActive);
   const waiters = employees.filter(e => e.role === 'ofitsiant' && e.isActive);
   const busyTables = tables.filter(t => t.status === 'busy');
 
+  const paymentBreakdown = orders.reduce((acc, o) => {
+    if (o.paymentStatus !== 'paid') return acc;
+    acc[o.paymentMethod] = (acc[o.paymentMethod] || 0) + o.total;
+    return acc;
+  }, {});
+
   const revenueByBrand = brands.map(b => ({
     name: b.name,
-    revenue: reportOrders
+    revenue: orders
       .filter(o => o.paymentStatus === 'paid' && (o.brand?._id || o.brand) === b._id)
-      .reduce((sum, o) => sum + Number(o.total || 0), 0)
+      .reduce((sum, o) => sum + o.total, 0)
   }));
-
-  const reportLabel = selectedDate === getTodayKey()
-    ? 'Bugungi buyurtmalar'
-    : `${formatReportDate(selectedDate)} buyurtmalari`;
 
   const cards = [
     { label: 'Umumiy daromad', value: `${revenue.toLocaleString()} so'm` },
-    { label: reportLabel, value: reportOrders.length },
+    { label: 'Bugungi buyurtmalar', value: ordersToday.length },
     { label: 'Yakunlangan', value: completedOrders.length },
     { label: 'Kutilayotgan', value: pendingOrders.length },
     { label: 'Yetkazib berish', value: deliveryOrders.length },
     { label: 'Stol buyurtmalari', value: tableOrders.length },
-    { label: 'Mijozlar', value: reportCustomerCount },
-    { label: 'Faol kuryerlar', value: couriers.length },
-    { label: 'Faol ofitsiantlar', value: waiters.length },
+    { label: 'Mijozlar', value: customerCount },
+    { label: `Faol kuryerlar`, value: couriers.length },
+    { label: `Faol ofitsiantlar`, value: waiters.length },
     { label: 'Band stollar', value: `${busyTables.length} / ${tables.length}` }
   ];
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
-        <h2 style={{ margin: 0 }}>
-          Dashboard {user?.role === 'boss' ? '(barcha brendlar)' : ''}
-        </h2>
-
-        <div className="card" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px' }}>
-          <label htmlFor="dashboard-report-date" style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-            Hisobot sanasi
-          </label>
-          <input
-            id="dashboard-report-date"
-            type="date"
-            value={selectedDate}
-            onChange={e => setSelectedDate(e.target.value)}
-            style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border, #ddd)' }}
-          />
-        </div>
-      </div>
-
+      <h2 style={{ marginTop: 0 }}>Dashboard {user?.role === 'boss' ? '(barcha brendlar)' : ''}</h2>
       {error && <div className="error-text">{error}</div>}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
@@ -136,6 +90,16 @@ export default function DashboardPage() {
           <div key={c.label} className="card">
             <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>{c.label}</div>
             <div style={{ fontSize: 22, fontWeight: 700, marginTop: 4 }}>{c.value}</div>
+          </div>
+        ))}
+      </div>
+
+      <h3 style={{ marginTop: 24 }}>To'lov turlari bo'yicha daromad</h3>
+      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+        {Object.keys(PAYMENT_LABELS).map(method => (
+          <div key={method} className="card" style={{ minWidth: 140 }}>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>{PAYMENT_LABELS[method]}</div>
+            <div style={{ fontSize: 18, fontWeight: 700 }}>{(paymentBreakdown[method] || 0).toLocaleString()} so'm</div>
           </div>
         ))}
       </div>
@@ -152,12 +116,12 @@ export default function DashboardPage() {
         </>
       )}
 
-      <h3 style={{ marginTop: 24 }}>{reportLabel}</h3>
-      {!reportOrders.length && <div className="empty-state">Tanlangan kunda buyurtmalar yo'q</div>}
-      {reportOrders.slice(0, 10).map(o => (
+      <h3 style={{ marginTop: 24 }}>So'nggi buyurtmalar</h3>
+      {!orders.length && <div className="empty-state">Buyurtmalar yo'q</div>}
+      {orders.slice(0, 10).map(o => (
         <div key={o._id} className="card" style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between' }}>
           <span>{o.orderNumber} · {o.brand?.name}</span>
-          <span>{Number(o.total || 0).toLocaleString()} so'm</span>
+          <span>{o.total.toLocaleString()} so'm</span>
         </div>
       ))}
     </div>
