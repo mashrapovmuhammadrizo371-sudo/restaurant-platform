@@ -108,8 +108,8 @@ export function CustomerAuthProvider({ children }) {
   // Kept for a possible future full-account flow (e.g. a mobile app) —
   // not currently used by the customer-facing UI, which relies entirely
   // on the automatic anonymous session above.
-  async function register(name, surname, phone, password, address = '') {
-    const res = await api.post('/auth/customer/register', { name, surname, phone, password, address });
+  async function register(name, surname, phone, password, address = '', recaptchaToken = '') {
+    const res = await api.post('/auth/customer/register', { name, surname, phone, password, address, recaptchaToken });
     localStorage.setItem('customerToken', res.token);
     setCustomer(res.customer);
     return res.customer;
