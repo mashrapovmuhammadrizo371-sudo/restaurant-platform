@@ -39,4 +39,14 @@ function filePublicUrl(filename) {
   return `/uploads/${filename}`;
 }
 
-module.exports = { upload, filePublicUrl };
+// Convert a stored relative upload path into an absolute URL for clients
+// when frontend and backend are deployed on different origins (e.g. Render).
+function absoluteFileUrl(value, req) {
+  if (!value) return null;
+  if (/^https?:\/\//i.test(value)) return value;
+  if (!req) return value;
+  const pathValue = value.startsWith('/') ? value : `/${value}`;
+  return `${req.protocol}://${req.get('host')}${pathValue}`;
+}
+
+module.exports = { upload, filePublicUrl, absoluteFileUrl };
