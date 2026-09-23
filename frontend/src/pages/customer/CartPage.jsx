@@ -6,6 +6,7 @@ import { getTables } from '../../services/tableService';
 import { validatePromoCode } from '../../services/promoCodeService';
 import { createOrder } from '../../services/orderService';
 import { isValidUzPhone, formatUzPhoneInput, UZ_PHONE_PLACEHOLDER } from '../../utils/phone.js';
+import LocationInput from '../../components/LocationInput.jsx';
 
 const PAYMENT_LABELS = { naqd: 'Naqd', karta: 'Karta', online: 'Onlayn' };
 
@@ -182,28 +183,7 @@ export default function CartPage() {
           <>
             <div className="form-group">
               <label className="form-label">Manzil</label>
-              <div style={{ position: 'relative' }}>
-                <input
-                  className="input"
-                  style={{ paddingRight: 48 }}
-                  value={deliveryAddress}
-                  onChange={e => setDeliveryAddress(e.target.value)}
-                  placeholder="Yetkazib berish manzili"
-                />
-                <button
-                  type="button"
-                  onClick={detectDeliveryAddress}
-                  disabled={locationLoading}
-                  title="Определить местоположение"
-                  aria-label="Определить местоположение"
-                  style={{
-                    position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
-                    width: 34, height: 34, border: '1px solid var(--border)', borderRadius: 10,
-                    background: 'var(--surface)', cursor: locationLoading ? 'wait' : 'pointer',
-                    display: 'grid', placeItems: 'center', fontSize: 17, padding: 0
-                  }}
-                >{locationLoading ? '⏳' : '📍'}</button>
-              </div>
+              <LocationInput value={deliveryAddress} onChange={setDeliveryAddress} placeholder="Yetkazib berish manzili" />
             </div>
             <div className="form-group">
               <label className="form-label">Bog'lanish uchun telefon</label>
