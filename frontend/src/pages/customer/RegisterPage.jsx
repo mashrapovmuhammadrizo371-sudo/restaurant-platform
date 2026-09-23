@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCustomerAuth } from '../../context/CustomerAuthContext.jsx';
 
@@ -8,8 +8,8 @@ export default function RegisterPage() {
   const [form, setForm] = useState({ name: '', surname: '', phone: '', password: '', confirmPassword: '', address: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [locationLoading, setLocationLoading] = useState(false);
-  const update = (key, value) => setForm(prev => ({ ...prev, [key]: value }));
+  const [locationLoading, setLocationLoading] = useState(false);\n  const [recaptchaToken, setRecaptchaToken] = useState('');\n  const recaptchaRef = useRef(null);\n  const recaptchaWidgetRef = useRef(null);\n  const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '';
+  const update = (key, value) => setForm(prev => ({ ...prev, [key]: value }));\n\n  useEffect(() => {\n    if (!recaptchaSiteKey || !recaptchaRef.current) return;\n\n    const renderRecaptcha = () => {\n      if (!window.grecaptcha || !recaptchaRef.current || recaptchaWidgetRef.current !== null) return;\n      recaptchaWidgetRef.current = window.grecaptcha.render(recaptchaRef.current, {\n        sitekey: recaptchaSiteKey,\n        theme: 'light',\n        callback: token => setRecaptchaToken(token),\n        'expired-callback': () => setRecaptchaToken(''),\n        'error-callback': () => setRecaptchaToken('')\n      });\n    };\n\n    if (window.grecaptcha) {\n      window.grecaptcha.ready(renderRecaptcha);\n      return;\n    }\n\n    const existingScript = document.querySelector('script[src^="https://www.google.com/recaptcha/api.js"]');\n    if (existingScript) {\n      existingScript.addEventListener('load', renderRecaptcha);\n      return () => existingScript.removeEventListener('load', renderRecaptcha);\n    }\n\n    const script = document.createElement('script');\n    script.src = 'https://www.google.com/recaptcha/api.js?render=explicit';\n    script.async = true;\n    script.defer = true;\n    script.onload = renderRecaptcha;\n    document.head.appendChild(script);\n  }, [recaptchaSiteKey]);
 
   function formatPhone(value) {
     const digits = value.replace(/\D/g, '').replace(/^998/, '').slice(0, 9);
@@ -62,7 +62,7 @@ export default function RegisterPage() {
     if (form.password !== form.confirmPassword) return setError('Parollar bir xil emas.');
     setLoading(true);
     try {
-      await register(form.name.trim(), form.surname.trim(), form.phone.trim(), form.password, form.address.trim());
+      await register(form.name.trim(), form.surname.trim(), form.phone.trim(), form.password, form.address.trim(), recaptchaToken);
       navigate('/', { replace: true });
     } catch (err) { setError(err.message || 'Ro‘yxatdan o‘tishda xatolik.'); }
     finally { setLoading(false); }
@@ -96,7 +96,7 @@ export default function RegisterPage() {
             >{locationLoading ? '⏳' : '📍'}</button>
           </div>
         </div>
-        <div className="form-group"><label className="form-label">Пароль</label><input className="input" type="password" value={form.password} onChange={e => update('password', e.target.value)} required /></div>
+        <div className="form-group" style={{ marginTop: 18, marginBottom: 18 }}><div ref={recaptchaRef} /></div>\n        <div className="form-group"><label className="form-label">Пароль</label><input className="input" type="password" value={form.password} onChange={e => update('password', e.target.value)} required /></div>
         <div className="form-group"><label className="form-label">Подтвердить пароль</label><input className="input" type="password" value={form.confirmPassword} onChange={e => update('confirmPassword', e.target.value)} required /></div>
         {error && <div className="error-text" style={{ marginBottom: 12 }}>{error}</div>}
         <button className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>{loading ? 'Сохранение...' : 'Зарегистрироваться'}</button>
