@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { getOrders } from '../../services/orderService';
-import { getCustomers } from '../../services/customerService';
 import { getEmployees } from '../../services/employeeService';
 import { getBrands } from '../../services/brandService';
 import { getStaffTables } from '../../services/tableService';
@@ -42,7 +41,6 @@ function formatReportDate(dateKey) {
 export default function DashboardPage() {
   const { user } = useAuth();
   const [orders, setOrders] = useState([]);
-  const [customerCount, setCustomerCount] = useState(0);
   const [employees, setEmployees] = useState([]);
   const [brands, setBrands] = useState([]);
   const [tables, setTables] = useState([]);
@@ -51,10 +49,12 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([getOrders(), getCustomers(), getEmployees(), getBrands()])
-      .then(async ([ordersRes, customersRes, employeesRes, brandsRes]) => {
+    setLoading(true);
+    setError('');
+
+    Promise.all([getOrders({ date: selectedDate }), getEmployees(), getBrands()])
+      .then(async ([ordersRes, employeesRes, brandsRes]) => {
         setOrders(ordersRes.orders || []);
-        setCustomerCount((customersRes.customers || []).length);
         setEmployees(employeesRes.employees || []);
         setBrands(brandsRes.brands || []);
 
@@ -65,12 +65,9 @@ export default function DashboardPage() {
       })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
-  }, []);
+  }, [selectedDate]);
 
-  const reportOrders = useMemo(
-    () => orders.filter(o => getDateKey(o.createdAt) === selectedDate),
-    [orders, selectedDate]
-  );
+  const reportOrders = orders;
 
   const reportCustomerCount = useMemo(() => {
     const ids = new Set();
