@@ -1,25 +1,39 @@
 import React from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext.jsx';
 import { useLanguage } from '../context/LanguageContext.jsx';
 import { useEffect, useState } from 'react';
-import { getBrands } from '../services/brandService';
+import { getBrands, getBrand } from '../services/brandService';
 
 export default function CustomerLayout() {
   const { cart } = useCart();
   const { t, language, setLanguage } = useLanguage();
+  const location = useLocation();
   const itemCount = cart.items.reduce((sum, i) => sum + i.quantity, 0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [restaurantPhone, setRestaurantPhone] = useState('');
+  const [pageBrandName, setPageBrandName] = useState('MASHRAPOV');
 
   useEffect(() => {
     getBrands().then(res => setRestaurantPhone(res.brands?.find(b => b.phone)?.phone || '')).catch(() => {});
   }, []);
 
+  useEffect(() => {
+    const match = location.pathname.match(/^\/brand\/([^/]+)/);
+    if (!match) {
+      setPageBrandName('MASHRAPOV');
+      return;
+    }
+
+    getBrand(match[1])
+      .then(res => setPageBrandName(res.brand?.name || 'MASHRAPOV'))
+      .catch(() => setPageBrandName('MASHRAPOV'));
+  }, [location.pathname]);
+
   return (
     <div style={{ minHeight: '100vh', paddingBottom: 70 }}>
       <Outlet />
-      <div className="customer-brand-title">MASHRAPOV</div>
+      <div className="customer-brand-title">{pageBrandName}</div>
       <button className={'customer-menu-trigger ' + (menuOpen ? 'open' : '')} onClick={() => setMenuOpen(v => !v)} aria-label="Menu">
         <span></span><span></span><span></span>
       </button>
