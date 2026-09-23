@@ -1,7 +1,7 @@
 const asyncHandler = require('../utils/asyncHandler');
 const ApiError = require('../utils/ApiError');
 const Banner = require('../models/Banner');
-const { filePublicUrl } = require('../middleware/upload');
+const { filePublicUrl, absoluteFileUrl } = require('../middleware/upload');
 
 const listBanners = asyncHandler(async (req, res) => {
   const filter = {};
@@ -9,7 +9,7 @@ const listBanners = asyncHandler(async (req, res) => {
   if (req.principalType !== 'staff') filter.isActive = true;
 
   const banners = await Banner.find(filter).sort({ order: 1 });
-  res.json({ success: true, banners });
+  res.json({ success: true, banners: banners.map(banner => { const data = banner.toObject(); data.image = absoluteFileUrl(data.image, req); return data; }) });
 });
 
 const createBanner = asyncHandler(async (req, res) => {
@@ -24,7 +24,7 @@ const createBanner = asyncHandler(async (req, res) => {
     order,
     image: filePublicUrl(req.file.filename)
   });
-  res.status(201).json({ success: true, banner });
+  res.status(201).json({ success: true, banner: (() => { const data = banner.toObject(); data.image = absoluteFileUrl(data.image, req); return data; })() });
 });
 
 const updateBanner = asyncHandler(async (req, res) => {
@@ -37,7 +37,7 @@ const updateBanner = asyncHandler(async (req, res) => {
   if (req.file) banner.image = filePublicUrl(req.file.filename);
 
   await banner.save();
-  res.json({ success: true, banner });
+  res.json({ success: true, banner: (() => { const data = banner.toObject(); data.image = absoluteFileUrl(data.image, req); return data; })() });
 });
 
 const deleteBanner = asyncHandler(async (req, res) => {
