@@ -3,6 +3,7 @@ import { getBrands } from '../../services/brandService';
 import { useLanguage } from '../../context/LanguageContext.jsx';
 import api from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext.jsx';
+import { formatUzPhoneInput, UZ_PHONE_PLACEHOLDER } from '../../utils/phone.js';
 
 const LANGUAGE_LABELS = { uz: "O'zbek", ru: 'Русский', en: 'English' };
 
@@ -158,7 +159,7 @@ export default function SettingsPage() {
         </div>
         <div className="form-group">
           <label className="form-label">{t('phone')}</label>
-          <input className="input" type="tel" value={profile.phone} onChange={e => updateProfile('phone', e.target.value)} placeholder="+998 XX XXX XX XX" inputMode="tel" />
+          <input className="input" type="tel" inputMode="numeric" value={profile.phone || '+998 '} onFocus={() => { if (!profile.phone) updateProfile('phone', '+998 '); }} onChange={e => updateProfile('phone', formatUzPhoneInput(e.target.value))} placeholder={UZ_PHONE_PLACEHOLDER} maxLength={17} />
         </div>
         <div className="form-group">
           <label className="form-label">{t('address')}</label>
