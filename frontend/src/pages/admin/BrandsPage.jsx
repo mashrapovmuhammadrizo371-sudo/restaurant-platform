@@ -6,10 +6,21 @@ import LocationInput from '../../components/LocationInput.jsx';
 
 function formatOpeningHours(value) {
   const raw = String(value || '').replace(/\D/g, '').slice(0, 8);
-  let formatted = raw;
-  if (raw.length > 2) formatted = raw.slice(0, 2) + ':' + raw.slice(2, 4);
-  if (raw.length > 4) formatted += ' - ';
-  if (raw.length > 6) formatted += raw.slice(4, 6) + ':' + raw.slice(6, 8);
+
+  if (raw.length <= 2) return raw;
+  if (raw.length <= 4) return raw.slice(0, 2) + ':' + raw.slice(2);
+
+  const start = raw.slice(0, 4);
+  const end = raw.slice(4);
+
+  let formatted = start.slice(0, 2) + ':' + start.slice(2) + ' - ';
+
+  if (end.length <= 2) {
+    formatted += end;
+  } else {
+    formatted += end.slice(0, 2) + ':' + end.slice(2);
+  }
+
   return formatted;
 }
 
