@@ -1,5 +1,6 @@
 const { Server } = require('socket.io');
 const { verifyToken } = require('../utils/jwt');
+const User = require('../models/User');
 
 let io = null;
 
@@ -36,16 +37,39 @@ function initSocket(httpServer) {
 
     if (principal.type === 'customer') {
       socket.join(`customer:${principal.sub}`);
+      return;
     }
+
     if (principal.type === 'staff') {
       if (principal.role === 'courier') socket.join(`courier:${principal.sub}`);
-      // Operators/cashiers/ofitsiants join brand rooms explicitly via a
-      // "watch" event, since one staff account may manage multiple brands.
+
+      // Load the staff member server-side and join ONLY the brand rooms
+      // they are actually assigned to. This makes new-order delivery
+      // reliable even if the frontend emits watch:brand before the socket
+      // has fully connected/reconnected.
+      User.findById(principal.sub).select('role brands isActive').lean()
+        .then(user => {
+          if (!user || !user.isActive) return;
+          const brandIds = (user.brands || []).map(id => String(id));
+          if (user.role === 'boss') return;
+          if (user.role === 'operator' || user.role === 'cashier') {
+            brandIds.forEach(brandId => socket.join(`brand:${brandId}:operators`));
+          }
+          if (user.role === 'ofitsiant') {
+            brandIds.forEach(brandId => socket.join(`brand:${brandId}:ofitsiant`));
+          }
+        })
+        .catch(() => {});
+
+      // Keep the explicit watch event for compatibility with the existing
+      // frontend; the server-side join above is the authoritative path.
       socket.on('watch:brand', brandId => {
+        const id = String(brandId || '');
+        if (!id) return;
         if (principal.role === 'operator' || principal.role === 'cashier') {
-          socket.join(`brand:${brandId}:operators`);
+          socket.join(`brand:${id}:operators`);
         }
-        if (principal.role === 'ofitsiant') socket.join(`brand:${brandId}:ofitsiant`);
+        if (principal.role === 'ofitsiant') socket.join(`brand:${id}:ofitsiant`);
       });
     }
   });
