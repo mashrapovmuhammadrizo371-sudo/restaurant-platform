@@ -1,6 +1,6 @@
 import { io } from 'socket.io-client';
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || undefined; // undefined = same-origin
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'https://restaurant-platform-1-74ct.onrender.com';
 
 let socketInstance = null;
 
