@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { getStaffBrands, createBrand, updateBrand, deleteBrand } from '../../services/brandService';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { formatUzPhoneInput, UZ_PHONE_PLACEHOLDER } from '../../utils/phone.js';
+import LocationInput from '../../components/LocationInput.jsx';
 
 const EMPTY = {
   name: '', slug: '', mainColor: '#ff5a1f', phone: '', address: '',
@@ -82,7 +83,7 @@ export default function BrandsPage() {
             </div>
             <div className="form-group">
               <label className="form-label">Manzil</label>
-              <input className="input" value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} />
+              <LocationInput value={form.address} onChange={address => setForm({ ...form, address })} />
             </div>
             <div className="form-group">
               <label className="form-label">Ish vaqti</label>
