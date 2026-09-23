@@ -48,10 +48,13 @@ export default function CashierPage() {
     const token = localStorage.getItem('staffToken');
     if (!token || !user) return;
     const socket = connectSocket(token);
-    (user.brands || []).forEach(brandId => socket.emit('watch:brand', brandId));
+    const watchBrands = () => (user.brands || []).forEach(brandId => socket.emit('watch:brand', brandId));
+    socket.on('connect', watchBrands);
+    if (socket.connected) watchBrands();
     socket.on('order:new', load);
     socket.on('table_order:update', load);
     return () => {
+      socket.off('connect', watchBrands);
       socket.off('order:new', load);
       socket.off('table_order:update', load);
     };
