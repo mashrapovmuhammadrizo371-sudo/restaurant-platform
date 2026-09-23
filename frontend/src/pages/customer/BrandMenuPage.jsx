@@ -66,8 +66,8 @@ export default function BrandMenuPage() {
 
   return (
     <div>
-      <div className="top-bar">
-        <button className="btn btn-secondary" onClick={() => navigate('/')}>← Orqaga</button>
+      <div className="top-bar brand-menu-top-bar">
+        <button className="btn btn-secondary brand-back-button" onClick={() => navigate('/')}>← <span>Orqaga</span></button>
         <div style={{ fontWeight: 700 }}>{brand.name}</div>
         <div style={{ width: 40 }} />
       </div>
