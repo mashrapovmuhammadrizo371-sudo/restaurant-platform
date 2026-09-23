@@ -754,3 +754,27 @@ button { cursor: pointer; }
 .staff-menu-bottom{margin-top:auto;padding-top:14px;border-top:1px solid #f0f0f2}
 .staff-menu-logout{width:100%;padding:11px 12px;border:0;border-radius:11px;background:#f6f6f7;color:#6f6d74;font-size:12px;font-weight:750;cursor:pointer}
 .staff-menu-logout:hover{background:#fff0f0;color:var(--brand-color-dark)}
+
+
+/* Customer centered restaurant brand title */
+.customer-brand-title{
+  position:fixed;
+  top:0;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:100;
+  height:68px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  pointer-events:none;
+  color:#241f1b;
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:19px;
+  font-weight:700;
+  letter-spacing:.16em;
+  white-space:nowrap;
+}
+@media(max-width:560px){
+  .customer-brand-title{height:60px;font-size:16px;letter-spacing:.14em;}
+}
