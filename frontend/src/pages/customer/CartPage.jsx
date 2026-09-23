@@ -32,6 +32,7 @@ export default function CartPage() {
   const [promoError, setPromoError] = useState('');
   const [error, setError] = useState('');
   const [placing, setPlacing] = useState(false);
+  const [locationLoading, setLocationLoading] = useState(false);
 
   useEffect(() => {
     if (orderType === 'table' && cart.brand) {
@@ -49,6 +50,44 @@ export default function CartPage() {
     } catch (err) {
       setPromoError(err.message);
     }
+  }
+
+  async function detectDeliveryAddress() {
+    if (!navigator.geolocation) {
+      setError("Bu qurilmada joylashuvni aniqlash qo‘llab-quvvatlanmaydi.");
+      return;
+    }
+    setLocationLoading(true);
+    setError('');
+    navigator.geolocation.getCurrentPosition(
+      async ({ coords }) => {
+        try {
+          const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${coords.latitude}&longitude=${coords.longitude}&localityLanguage=ru`);
+          if (!response.ok) throw new Error('Address lookup failed');
+          const data = await response.json();
+          const address = [data.locality, data.city, data.principalSubdivision, data.countryName]
+            .filter(Boolean)
+            .filter((v, i, a) => a.indexOf(v) === i)
+            .join(', ');
+          if (address) setDeliveryAddress(address);
+          else setError("Joylashuv aniqlandi, lekin manzilni olishning iloji bo‘lmadi.");
+        } catch {
+          setError("Manzilni avtomatik aniqlab bo‘lmadi.");
+        } finally {
+          setLocationLoading(false);
+        }
+      },
+      err => {
+        const messages = {
+          1: "Joylashuvga ruxsat berilmadi.",
+          2: "Joylashuvni aniqlab bo‘lmadi.",
+          3: "Joylashuvni aniqlash vaqti tugadi."
+        };
+        setError(messages[err.code] || "Joylashuvni aniqlab bo‘lmadi.");
+        setLocationLoading(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
   }
 
   async function handlePlaceOrder() {
@@ -143,12 +182,28 @@ export default function CartPage() {
           <>
             <div className="form-group">
               <label className="form-label">Manzil</label>
-              <input
-                className="input"
-                value={deliveryAddress}
-                onChange={e => setDeliveryAddress(e.target.value)}
-                placeholder="Yetkazib berish manzili"
-              />
+              <div style={{ position: 'relative' }}>
+                <input
+                  className="input"
+                  style={{ paddingRight: 48 }}
+                  value={deliveryAddress}
+                  onChange={e => setDeliveryAddress(e.target.value)}
+                  placeholder="Yetkazib berish manzili"
+                />
+                <button
+                  type="button"
+                  onClick={detectDeliveryAddress}
+                  disabled={locationLoading}
+                  title="Определить местоположение"
+                  aria-label="Определить местоположение"
+                  style={{
+                    position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
+                    width: 34, height: 34, border: '1px solid var(--border)', borderRadius: 10,
+                    background: 'var(--surface)', cursor: locationLoading ? 'wait' : 'pointer',
+                    display: 'grid', placeItems: 'center', fontSize: 17, padding: 0
+                  }}
+                >{locationLoading ? '⏳' : '📍'}</button>
+              </div>
             </div>
             <div className="form-group">
               <label className="form-label">Bog'lanish uchun telefon</label>
