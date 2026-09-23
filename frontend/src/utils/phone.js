@@ -23,7 +23,7 @@ export const UZ_PHONE_ERROR = "Telefon raqam aynan +998 XX XXX XX XX shaklida bo
 // actively typing into the required grouping.
 export function formatUzPhoneInput(raw) {
   const digitsAll = raw.replace(/\D/g, '');
-  if (digitsAll.length === 0) return '';
+  if (digitsAll.length === 0) return '+998 ';
 
   const digits = (digitsAll.startsWith('998') ? digitsAll.slice(3) : digitsAll).slice(0, 9);
 
