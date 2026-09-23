@@ -28,7 +28,7 @@ export default function MyOrdersPage() {
   if (loading) return <div className="empty-state"><div className="spinner" style={{ margin: '0 auto' }} /></div>;
 
   return (
-    <div className="container" style={{ paddingTop: 16 }}>
+    <div className="container" style={{ paddingTop: 68 }}>
       <h2 style={{ marginTop: 0 }}>Buyurtmalarim</h2>
       {error && <div className="error-text">{error}</div>}
       {!orders.length && <div className="empty-state">Hali buyurtmalar yo'q</div>}
