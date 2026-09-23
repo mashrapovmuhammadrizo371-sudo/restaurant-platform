@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCustomerAuth } from '../../context/CustomerAuthContext.jsx';
+import { formatUzPhoneInput } from '../../utils/phone.js';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -9,16 +10,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
-  function formatPhone(value) {
-    const digits = value.replace(/\D/g, '').replace(/^998/, '').slice(0, 9);
-    let formatted = '+998';
-    if (digits.length) formatted += ' ' + digits.slice(0, 2);
-    if (digits.length > 2) formatted += ' ' + digits.slice(2, 5);
-    if (digits.length > 5) formatted += ' ' + digits.slice(5, 7);
-    if (digits.length > 7) formatted += ' ' + digits.slice(7, 9);
-    return formatted;
-  }
 
   async function submit(e) {
     e.preventDefault();
@@ -42,7 +33,7 @@ export default function LoginPage() {
       <form onSubmit={submit}>
         <div className="form-group">
           <label className="form-label">Номер телефона</label>
-          <input className="input" type="tel" inputMode="numeric" value={phone} onFocus={() => { if (!phone) setPhone('+998 '); }} onChange={e => setPhone(formatPhone(e.target.value))} required />
+          <input className="input" type="tel" inputMode="numeric" value={phone} onFocus={() => { if (!phone) setPhone('+998 '); }} onChange={e => setPhone(formatUzPhoneInput(e.target.value))} required />
         </div>
         <div className="form-group">
           <label className="form-label">Пароль</label>
