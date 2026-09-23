@@ -1,7 +1,7 @@
 const asyncHandler = require('../utils/asyncHandler');
 const ApiError = require('../utils/ApiError');
 const Food = require('../models/Food');
-const { filePublicUrl } = require('../middleware/upload');
+const { filePublicUrl, absoluteFileUrl } = require('../middleware/upload');
 
 // GET /api/foods?brand=<id>&category=<id>&search=<text>
 const listFoods = asyncHandler(async (req, res) => {
@@ -12,13 +12,13 @@ const listFoods = asyncHandler(async (req, res) => {
   if (req.principalType !== 'staff') filter.isActive = true;
 
   const foods = await Food.find(filter).populate('category', 'name').sort({ name: 1 });
-  res.json({ success: true, foods });
+  res.json({ success: true, foods: foods.map(food => { const data = food.toObject(); data.image = absoluteFileUrl(data.image, req); return data; }) });
 });
 
 const getFood = asyncHandler(async (req, res) => {
   const food = await Food.findById(req.params.id).populate('category', 'name');
   if (!food) throw new ApiError(404, 'Food not found');
-  res.json({ success: true, food });
+  res.json({ success: true, food: (() => { const data = food.toObject(); data.image = absoluteFileUrl(data.image, req); return data; })() });
 });
 
 const createFood = asyncHandler(async (req, res) => {
@@ -35,7 +35,7 @@ const createFood = asyncHandler(async (req, res) => {
     price,
     image: req.file ? filePublicUrl(req.file.filename) : null
   });
-  res.status(201).json({ success: true, food });
+  res.status(201).json({ success: true, food: (() => { const data = food.toObject(); data.image = absoluteFileUrl(data.image, req); return data; })() });
 });
 
 const updateFood = asyncHandler(async (req, res) => {
@@ -49,7 +49,7 @@ const updateFood = asyncHandler(async (req, res) => {
   if (req.file) food.image = filePublicUrl(req.file.filename);
 
   await food.save();
-  res.json({ success: true, food });
+  res.json({ success: true, food: (() => { const data = food.toObject(); data.image = absoluteFileUrl(data.image, req); return data; })() });
 });
 
 const deleteFood = asyncHandler(async (req, res) => {
