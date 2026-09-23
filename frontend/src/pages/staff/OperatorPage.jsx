@@ -22,9 +22,11 @@ export default function OperatorPage() {
     const token = localStorage.getItem('staffToken');
     if (!token || !user) return;
     const socket = connectSocket(token);
-    (user.brands || []).forEach(brandId => socket.emit('watch:brand', brandId));
+    const watchBrands = () => (user.brands || []).forEach(brandId => socket.emit('watch:brand', brandId));
+    socket.on('connect', watchBrands);
+    if (socket.connected) watchBrands();
     socket.on('order:new', load);
-    return () => socket.off('order:new', load);
+    return () => { socket.off('connect', watchBrands); socket.off('order:new', load); };
   }, [user]);
 
   async function handleAccept(id) { try { await acceptOrder(id); load(); } catch (err) { setError(err.message); } }
