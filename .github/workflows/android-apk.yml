@@ -29,21 +29,23 @@ jobs:
           java-version: 17
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --include=dev
 
-      - name: Verify TypeScript
+      - name: Verify Capacitor CLI
         run: |
-          npm install --no-save typescript@^5.6.3
-          npx tsc --version
+          test -f capacitor.config.js
+          test ! -f capacitor.config.ts
+          ./node_modules/.bin/cap --version
+          node -e "import('./capacitor.config.js').then(m => console.log(m.default))"
 
       - name: Build web app
         run: npm run build
 
       - name: Add Android platform
-        run: npx cap add android
+        run: ./node_modules/.bin/cap add android
 
       - name: Sync Capacitor
-        run: npx cap sync android
+        run: ./node_modules/.bin/cap sync android
 
       - name: Build debug APK
         working-directory: frontend/android
