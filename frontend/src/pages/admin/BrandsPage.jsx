@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getStaffBrands, createBrand, updateBrand, deleteBrand } from '../../services/brandService';
 import { useAuth } from '../../context/AuthContext.jsx';
+import { formatUzPhoneInput, UZ_PHONE_PLACEHOLDER } from '../../utils/phone.js';
 
 const EMPTY = {
   name: '', slug: '', mainColor: '#ff5a1f', phone: '', address: '',
@@ -77,7 +78,7 @@ export default function BrandsPage() {
             </div>
             <div className="form-group">
               <label className="form-label">Telefon</label>
-              <input className="input" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
+              <input className="input" type="tel" inputMode="numeric" placeholder={UZ_PHONE_PLACEHOLDER} value={form.phone || '+998 '} onFocus={() => { if (!form.phone) setForm({ ...form, phone: '+998 ' }); }} onChange={e => setForm({ ...form, phone: formatUzPhoneInput(e.target.value) })} maxLength={17} />
             </div>
             <div className="form-group">
               <label className="form-label">Manzil</label>
