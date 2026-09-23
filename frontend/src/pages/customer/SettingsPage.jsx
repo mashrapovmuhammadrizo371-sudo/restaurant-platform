@@ -4,6 +4,7 @@ import { useLanguage } from '../../context/LanguageContext.jsx';
 import api from '../../services/api';
 import { useCustomerAuth } from '../../context/CustomerAuthContext.jsx';
 import { formatUzPhoneInput, UZ_PHONE_PLACEHOLDER } from '../../utils/phone.js';
+import LocationInput from '../../components/LocationInput.jsx';
 
 const LANGUAGE_LABELS = { uz: "O'zbek", ru: 'Русский', en: 'English' };
 
@@ -163,7 +164,7 @@ export default function SettingsPage() {
         </div>
         <div className="form-group">
           <label className="form-label">{t('address')}</label>
-          <textarea className="input" rows={3} value={profile.address} onChange={e => updateProfile('address', e.target.value)} placeholder={t('addressPlaceholder')} />
+          <LocationInput rows={3} value={profile.address} onChange={address => updateProfile('address', address)} placeholder={t('addressPlaceholder')} />
         </div>
 
         <button type="button" className="btn btn-primary" style={{ width: '100%', marginBottom: 8 }} onClick={detectLocation} disabled={locationLoading}>
