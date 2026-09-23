@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getCustomers, updateCustomerStatus, updateCustomer, deleteCustomer } from '../../services/customerService';
+import { formatUzPhoneInput, UZ_PHONE_PLACEHOLDER } from '../../utils/phone.js';
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState([]);
@@ -92,7 +93,7 @@ export default function CustomersPage() {
             <h3 style={{ marginTop: 0 }}>Mijozni tahrirlash</h3>
             <div className="form-group"><label className="form-label">Ism</label><input className="input" value={editing.name || ''} onChange={e => setEditing({ ...editing, name: e.target.value })} required /></div>
             <div className="form-group"><label className="form-label">Familiya</label><input className="input" value={editing.surname || ''} onChange={e => setEditing({ ...editing, surname: e.target.value })} /></div>
-            <div className="form-group"><label className="form-label">Telefon</label><input className="input" value={editing.phone || ''} onChange={e => setEditing({ ...editing, phone: e.target.value })} placeholder="+998 XX XXX XX XX" /></div>
+            <div className="form-group"><label className="form-label">Telefon</label><input className="input" type="tel" inputMode="numeric" value={editing.phone || '+998 '} onFocus={() => { if (!editing.phone) setEditing({ ...editing, phone: '+998 ' }); }} onChange={e => setEditing({ ...editing, phone: formatUzPhoneInput(e.target.value) })} placeholder={UZ_PHONE_PLACEHOLDER} maxLength={17} /></div>
             <div className="form-group"><label className="form-label">Manzil</label><textarea className="input" rows={3} value={editing.address || ''} onChange={e => setEditing({ ...editing, address: e.target.value })} /></div>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
               <button type="button" className="btn btn-secondary" onClick={() => setEditing(null)}>Bekor qilish</button>
