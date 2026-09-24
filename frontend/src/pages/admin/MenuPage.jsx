@@ -139,7 +139,7 @@ export default function MenuPage() {
               </div>
               <div className="form-group">
                 <label className="form-label">Rasm</label>
-                <input type="file" accept="image/*" onChange={e => setFoodForm({ ...foodForm, imageFile: e.target.files[0] })} />
+                <input type="file" accept="image/png,image/jpeg,image/webp" onChange={e => setFoodForm({ ...foodForm, imageFile: e.target.files[0] })} />
               </div>
             </div>
             <div className="form-group">
