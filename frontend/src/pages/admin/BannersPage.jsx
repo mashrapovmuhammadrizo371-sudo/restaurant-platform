@@ -68,7 +68,7 @@ export default function BannersPage() {
         </div>
         <div className="form-group">
           <label className="form-label">Rasm</label>
-          <input type="file" accept="image/*" onChange={e => setFile(e.target.files[0])} />
+          <input type="file" accept="image/png,image/jpeg,image/webp" onChange={e => setFile(e.target.files[0])} />
         </div>
         {error && <div className="error-text">{error}</div>}
         <button className="btn btn-primary">Qo'shish</button>
