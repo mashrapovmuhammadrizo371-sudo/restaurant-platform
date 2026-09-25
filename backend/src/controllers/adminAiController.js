@@ -16,18 +16,20 @@ async function chatWithAdminAi(req, res, next) {
     const message = String(req.body?.message || '').trim();
     if (!message) return res.status(400).json({ success: false, message: 'Savol yozing.' });
     if (message.length > 4000) return res.status(400).json({ success: false, message: 'Savol 4000 belgidan oshmasin.' });
-    if (!process.env.OPENAI_API_KEY) {
-      return res.status(503).json({ success: false, message: 'AI hali ulanmagan. Backend Render sozlamalariga OPENAI_API_KEY qo‘shing.' });
+    if (!process.env.OPENROUTER_API_KEY) {
+      return res.status(503).json({ success: false, message: 'AI hali ulanmagan. Render backend sozlamalariga OPENROUTER_API_KEY qo‘shing.' });
     }
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-        'Content-Type': 'application/json'
+        Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://restaurant-platform-2-37lo.onrender.com',
+        'X-OpenRouter-Title': 'Restaurant Platform Admin'
       },
       body: JSON.stringify({
-        model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+        model: process.env.OPENROUTER_MODEL || 'openrouter/free',
         temperature: 0.4,
         messages: [
           { role: 'system', content: SITE_CONTEXT },
@@ -38,8 +40,8 @@ async function chatWithAdminAi(req, res, next) {
 
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-      console.error('[admin-ai] Provider error:', response.status, data?.error?.message || 'unknown');
-      return res.status(502).json({ success: false, message: 'AI xizmatida xatolik. API sozlamalarini tekshiring.' });
+      console.error('[admin-ai] OpenRouter error:', response.status, data?.error?.message || 'unknown');
+      return res.status(502).json({ success: false, message: 'AI xizmatida xatolik. OpenRouter API sozlamalarini tekshiring.' });
     }
     const answer = data.choices?.[0]?.message?.content?.trim();
     if (!answer) return res.status(502).json({ success: false, message: 'AI javob qaytarmadi. Qayta urinib ko‘ring.' });
