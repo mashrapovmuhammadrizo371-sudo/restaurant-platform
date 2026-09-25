@@ -12,7 +12,8 @@ const NAV_ITEMS = [
   { to: '/admin/customers', label: 'Mijozlar', icon: '♙' },
   { to: '/admin/promocodes', label: 'Promokodlar', icon: '◇' },
   { to: '/admin/employees', label: 'Ishchilar / Ruxsatlar', icon: '♧' },
-  { to: '/admin/settings', label: 'Sozlamalar', icon: '⚙' }
+  { to: '/admin/settings', label: 'Sozlamalar', icon: '⚙' },
+  { to: '/admin/ai', label: 'AI yordamchi', icon: '✦' }
 ];
 
 export default function AdminLayout() {
