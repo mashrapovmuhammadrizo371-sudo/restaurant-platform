@@ -28,6 +28,7 @@ export default function CartPage() {
   const [tables, setTables] = useState([]);
   const [tableId, setTableId] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('naqd');
+  const [receiptFile, setReceiptFile] = useState(null);
   const [promoInput, setPromoInput] = useState('');
   const [promoApplied, setPromoApplied] = useState(null);
   const [promoError, setPromoError] = useState('');
@@ -135,13 +136,27 @@ export default function CartPage() {
       return;
     }
 
+    if (paymentMethod === 'karta' && !receiptFile) {
+      setError('Karta orqali to‘lov uchun chek rasmini yuklang');
+      return;
+    }
     setPlacing(true);
     try {
+      let receiptImage = null;
+      if (paymentMethod === 'karta' && receiptFile) {
+        receiptImage = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () => reject(new Error('Chek rasmini o‘qib bo‘lmadi'));
+          reader.readAsDataURL(receiptFile);
+        });
+      }
       const payload = {
         brand: cart.brand,
         orderType,
         items: cart.items.map(i => ({ food: i.food._id, quantity: i.quantity })),
         paymentMethod,
+        ...(receiptImage ? { receiptImage } : {}),
         ...(orderType === 'delivery' ? { deliveryAddress, contactPhone } : { tableId }),
         ...(promoApplied ? { promoCode: promoApplied.code } : {})
       };
@@ -247,6 +262,17 @@ export default function CartPage() {
             ))}
           </select>
         </div>
+
+        {paymentMethod === 'karta' && (
+          <div className="form-group card" style={{ marginTop: 10 }}>
+            <strong>Karta orqali to‘lov</strong>
+            <div style={{ marginTop: 6 }}>Karta raqami: {import.meta.env.VITE_CARD_NUMBER || 'Admin karta ma’lumotini kiritmagan'}</div>
+            <div>Karta egasi: {import.meta.env.VITE_CARD_HOLDER || '—'}</div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6 }}>Pul o‘tkazgach, chek rasmini yuklang. Buyurtma to‘lovi kassir tekshirguncha kutilmoqda.</div>
+            <input className="input" type="file" accept="image/jpeg,image/png,image/webp" style={{ marginTop: 8 }} onChange={e => setReceiptFile(e.target.files?.[0] || null)} />
+            {receiptFile && <div className="success-text">Chek tanlandi: {receiptFile.name}</div>}
+          </div>
+        )}
 
         <div className="form-group">
           <label className="form-label">Promokod</label>
