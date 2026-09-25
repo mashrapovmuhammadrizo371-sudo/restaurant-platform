@@ -13,6 +13,7 @@ import CustomersPage from './pages/admin/CustomersPage.jsx';
 import PromoCodesPage from './pages/admin/PromoCodesPage.jsx';
 import EmployeesPage from './pages/admin/EmployeesPage.jsx';
 import SettingsPage from './pages/admin/SettingsPage.jsx';
+import AdminAiPage from './pages/admin/AdminAiPage.jsx';
 
 import StaffLayout from './layouts/StaffLayout.jsx';
 import OperatorPage from './pages/staff/OperatorPage.jsx';
@@ -52,6 +53,7 @@ export default function App() {
         <Route path="promocodes" element={<PromoCodesPage />} />
         <Route path="employees" element={<EmployeesPage />} />
         <Route path="settings" element={<SettingsPage />} />
+        <Route path="ai" element={<AdminAiPage />} />
         <Route index element={<Navigate to="dashboard" replace />} />
       </Route>
 
