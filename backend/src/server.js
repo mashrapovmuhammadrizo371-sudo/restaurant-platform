@@ -26,6 +26,7 @@ const employeeRoutes = require('./routes/employeeRoutes');
 const courierRoutes = require('./routes/courierRoutes');
 const waiterRoutes = require('./routes/waiterRoutes');
 const paymentCardRoutes = require('./routes/paymentCardRoutes');
+const adminAiRoutes = require('./routes/adminAiRoutes');
 
 const app = express();
 
@@ -59,6 +60,7 @@ app.use('/api/employees', employeeRoutes);
 app.use('/api/couriers', courierRoutes);
 app.use('/api/waiters', waiterRoutes);
 app.use('/api/payment-card', paymentCardRoutes);
+app.use('/api/admin-ai', adminAiRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
