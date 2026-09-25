@@ -20,6 +20,9 @@ async function chatWithAdminAi(req, res, next) {
       return res.status(503).json({ success: false, message: 'AI hali ulanmagan. Render backend sozlamalariga OPENROUTER_API_KEY qo‘shing.' });
     }
 
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
+
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -28,6 +31,7 @@ async function chatWithAdminAi(req, res, next) {
         'HTTP-Referer': 'https://restaurant-platform-2-37lo.onrender.com',
         'X-OpenRouter-Title': 'Restaurant Platform Admin'
       },
+      signal: controller.signal,
       body: JSON.stringify({
         model: process.env.OPENROUTER_MODEL || 'openrouter/free',
         temperature: 0.4,
@@ -38,6 +42,7 @@ async function chatWithAdminAi(req, res, next) {
       })
     });
 
+    clearTimeout(timeout);
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
       console.error('[admin-ai] OpenRouter error:', response.status, data?.error?.message || 'unknown');
@@ -47,7 +52,12 @@ async function chatWithAdminAi(req, res, next) {
     if (!answer) return res.status(502).json({ success: false, message: 'AI javob qaytarmadi. Qayta urinib ko‘ring.' });
     return res.json({ success: true, answer });
   } catch (err) {
-    next(err);
+    if (err?.name === 'AbortError') {
+      console.error('[admin-ai] OpenRouter timeout after 30s');
+      return res.status(504).json({ success: false, message: 'AI javobi 30 soniyada kelmadi. Qayta urinib ko‘ring.' });
+    }
+    console.error('[admin-ai] Request failed:', err?.message || err);
+    return res.status(502).json({ success: false, message: 'AI serveriga ulanishda xatolik. Qayta urinib ko‘ring.' });
   }
 }
 
