@@ -24,7 +24,7 @@ export default function SettingsPage() {
       .then(res => {
         const card = res?.card;
         if (card) {
-          setCardNumber(String(card.cardNumber || '').replace(/\\D/g, '').replace(/(.{4})/g, '$1 ').trim());
+          setCardNumber(String(card.cardNumber || '').replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim());
           setCardHolder(card.cardHolder || '');
         }
       })
@@ -33,14 +33,14 @@ export default function SettingsPage() {
   }, []);
 
   function formatCardNumber(value) {
-    return String(value || '').replace(/\\D/g, '').slice(0, 19).replace(/(.{4})/g, '$1 ').trim();
+    return String(value || '').replace(/\D/g, '').slice(0, 19).replace(/(.{4})/g, '$1 ').trim();
   }
 
   async function handleSaveCard(e) {
     e.preventDefault();
     setCardMessage('');
     setError('');
-    const raw = cardNumber.replace(/\\D/g, '');
+    const raw = cardNumber.replace(/\D/g, '');
     if (raw.length < 12) {
       setError('Karta raqamini to‘liq kiriting');
       return;
