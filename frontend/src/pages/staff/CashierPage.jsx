@@ -100,6 +100,7 @@ export default function CashierPage() {
             {o.items.map((it, idx) => <li key={idx}>{it.name} × {it.quantity}</li>)}
           </ul>
           <div style={{ fontWeight: 700 }}>{o.total.toLocaleString()} so'm · {PAYMENT_LABELS[o.paymentMethod]}</div>
+          {o.paymentMethod === 'karta' && <div style={{ fontSize: 13, marginTop: 6 }}>💳 Tushgan karta: {o.paymentCardNumber ? o.paymentCardNumber.replace(/(\d{4})(?=\d)/g, '$1 ') : '—'}{o.paymentCardHolder ? ` · ${o.paymentCardHolder}` : ''}</div>}
           {o.paymentMethod === 'karta' && o.receiptImage && (
             <div style={{ marginTop: 8 }}>
               <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>Mijoz yuborgan to‘lov cheki</div>
