@@ -52,6 +52,18 @@ export default function OrdersPage() {
           <div style={{ fontWeight: 700, marginTop: 4 }}>
             {o.total.toLocaleString()} so'm · {o.paymentMethod} · {o.paymentStatus === 'paid' ? "To'langan" : 'Kutilmoqda'}
           </div>
+          {o.paymentMethod === 'karta' && o.receiptImage && (
+            <div style={{ marginTop: 10 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 5 }}>💳 Mijoz yuborgan to‘lov cheki</div>
+              <a href={o.receiptImage} target="_blank" rel="noreferrer">
+                <img
+                  src={o.receiptImage}
+                  alt="To‘lov cheki"
+                  style={{ display: 'block', maxWidth: '100%', maxHeight: 320, objectFit: 'contain', borderRadius: 8, cursor: 'pointer' }}
+                />
+              </a>
+            </div>
+          )}
           <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
             {o.status === 'new' && <button className="btn btn-primary" onClick={() => handleAccept(o._id)}>Qabul qilish</button>}
             {o.status === 'new' && <button className="btn btn-danger" onClick={() => handleReject(o._id)}>Rad etish</button>}
