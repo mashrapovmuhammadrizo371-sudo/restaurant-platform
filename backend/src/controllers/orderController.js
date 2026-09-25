@@ -57,7 +57,7 @@ const createOrder = asyncHandler(async (req, res) => {
 
   const {
     brand, orderType, items: rawItems, paymentMethod,
-    deliveryAddress, contactPhone, tableId, promoCode: promoCodeStr, receiptImage
+    deliveryAddress, contactPhone, deliveryLatitude, deliveryLongitude, deliveryLocationAccuracy, tableId, promoCode: promoCodeStr, receiptImage
   } = req.body;
 
   if (!brand || !orderType || !paymentMethod) {
@@ -127,6 +127,9 @@ const createOrder = asyncHandler(async (req, res) => {
     paymentCardHolder,
     receiptImage: receiptImage || null,
     deliveryAddress: orderType === 'delivery' ? deliveryAddress : null,
+    deliveryLatitude: orderType === 'delivery' && Number.isFinite(Number(deliveryLatitude)) ? Number(deliveryLatitude) : null,
+    deliveryLongitude: orderType === 'delivery' && Number.isFinite(Number(deliveryLongitude)) ? Number(deliveryLongitude) : null,
+    deliveryLocationAccuracy: orderType === 'delivery' && Number.isFinite(Number(deliveryLocationAccuracy)) ? Number(deliveryLocationAccuracy) : null,
     contactPhone: orderType === 'delivery' ? contactPhone : null,
     table: orderType === 'table' ? table._id : null,
     status: 'new'
