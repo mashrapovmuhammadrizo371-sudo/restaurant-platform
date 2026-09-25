@@ -100,6 +100,14 @@ export default function CashierPage() {
             {o.items.map((it, idx) => <li key={idx}>{it.name} × {it.quantity}</li>)}
           </ul>
           <div style={{ fontWeight: 700 }}>{o.total.toLocaleString()} so'm · {PAYMENT_LABELS[o.paymentMethod]}</div>
+          {o.paymentMethod === 'karta' && o.receiptImage && (
+            <div style={{ marginTop: 8 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>Mijoz yuborgan to‘lov cheki</div>
+              <a href={o.receiptImage} target="_blank" rel="noreferrer">
+                <img src={o.receiptImage} alt="To‘lov cheki" style={{ display: 'block', maxWidth: '100%', maxHeight: 280, objectFit: 'contain', borderRadius: 8 }} />
+              </a>
+            </div>
+          )}
           <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
             <button className="btn btn-primary" onClick={() => handleAccept(o._id)}>Qabul qilish</button>
             <button className="btn btn-danger" onClick={() => handleReject(o._id)}>Rad etish</button>
