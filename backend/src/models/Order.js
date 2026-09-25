@@ -23,6 +23,10 @@ const orderSchema = new mongoose.Schema(
 
     paymentMethod: { type: String, enum: ['naqd', 'karta', 'online'], required: true },
     paymentStatus: { type: String, enum: ['pending', 'paid', 'failed'], default: 'pending' },
+    // Snapshot of the card that the customer was instructed to pay to.
+    // Kept on the order so later card changes do not alter payment history.
+    paymentCardNumber: { type: String, default: null },
+    paymentCardHolder: { type: String, default: null },
     // Customer-submitted transfer receipt image (base64 data URL).
     receiptImage: { type: String, default: null, select: false },
 
