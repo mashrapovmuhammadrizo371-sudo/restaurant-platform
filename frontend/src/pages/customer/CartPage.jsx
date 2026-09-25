@@ -117,6 +117,10 @@ export default function CartPage() {
 
   async function handlePlaceOrder() {
     setError('');
+    if (!customer) {
+      navigate('/register?returnTo=%2Fcart');
+      return;
+    }
     if (!cart.items.length) return;
     if (orderType === 'delivery' && !deliveryAddress) {
       setError('Yetkazib berish manzilini kiriting');
