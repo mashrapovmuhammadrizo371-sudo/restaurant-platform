@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useCustomerAuth } from '../../context/CustomerAuthContext.jsx';
 import { formatUzPhoneInput, UZ_PHONE_PLACEHOLDER } from '../../utils/phone.js';
 import LocationInput from '../../components/LocationInput.jsx';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { register } = useCustomerAuth();
   const [form, setForm] = useState({ name: '', surname: '', phone: '', password: '', confirmPassword: '', address: '' });
   const [error, setError] = useState('');
@@ -118,7 +119,8 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       await register(form.name.trim(), form.surname.trim(), form.phone.trim(), form.password, form.address.trim(), recaptchaToken);
-      navigate('/', { replace: true });
+      const returnTo = new URLSearchParams(location.search).get('returnTo');
+      navigate(returnTo === '/cart' ? '/cart' : '/', { replace: true });
     } catch (err) { setError(err.message || 'Ro‘yxatdan o‘tishda xatolik.'); }
     finally { setLoading(false); }
   }
