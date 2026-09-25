@@ -12,7 +12,10 @@ export function CustomerAuthProvider({ children }) {
       if (!token) { if (!cancelled) setLoading(false); return; }
       try {
         const res = await api.get('/auth/customer/me');
-        if (!cancelled) setCustomer(res.customer);
+        if (!res.customer?.phone) {
+          localStorage.removeItem('customerToken');
+          if (!cancelled) setCustomer(null);
+        } else if (!cancelled) setCustomer(res.customer);
       } catch (err) {
         if (err.status === 401) localStorage.removeItem('customerToken');
         else if (!cancelled) setError('network');
@@ -27,7 +30,10 @@ export function CustomerAuthProvider({ children }) {
       const token = localStorage.getItem('customerToken');
       if (!token) return;
       const res = await api.get('/auth/customer/me');
-      setCustomer(res.customer);
+      if (!res.customer?.phone) {
+        localStorage.removeItem('customerToken');
+        setCustomer(null);
+      } else setCustomer(res.customer);
     } catch (err) {
       if (err.status === 401) { localStorage.removeItem('customerToken'); setCustomer(null); }
       else setError('network');
