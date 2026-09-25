@@ -25,6 +25,7 @@ const promoCodeRoutes = require('./routes/promoCodeRoutes');
 const employeeRoutes = require('./routes/employeeRoutes');
 const courierRoutes = require('./routes/courierRoutes');
 const waiterRoutes = require('./routes/waiterRoutes');
+const paymentCardRoutes = require('./routes/paymentCardRoutes');
 
 const app = express();
 
@@ -57,6 +58,7 @@ app.use('/api/promocodes', promoCodeRoutes);
 app.use('/api/employees', employeeRoutes);
 app.use('/api/couriers', courierRoutes);
 app.use('/api/waiters', waiterRoutes);
+app.use('/api/payment-card', paymentCardRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
