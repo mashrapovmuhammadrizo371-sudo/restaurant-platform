@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useCustomerAuth } from '../../context/CustomerAuthContext.jsx';
 import { formatUzPhoneInput } from '../../utils/phone.js';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useCustomerAuth();
   const [phone, setPhone] = useState('+998 ');
   const [password, setPassword] = useState('');
@@ -18,7 +19,8 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await login(phone, password);
-      navigate('/', { replace: true });
+      const returnTo = new URLSearchParams(location.search).get('returnTo');
+      navigate(returnTo === '/cart' ? '/cart' : '/', { replace: true });
     } catch (err) {
       setError(err.message || 'Войти не удалось.');
     } finally {
