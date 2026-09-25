@@ -23,6 +23,8 @@ const orderSchema = new mongoose.Schema(
 
     paymentMethod: { type: String, enum: ['naqd', 'karta', 'online'], required: true },
     paymentStatus: { type: String, enum: ['pending', 'paid', 'failed'], default: 'pending' },
+    // Customer-submitted transfer receipt image (base64 data URL).
+    receiptImage: { type: String, default: null, select: false },
 
     // delivery-specific
     deliveryAddress: { type: String, default: null },
