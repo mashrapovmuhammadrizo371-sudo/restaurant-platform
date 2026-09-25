@@ -7,6 +7,7 @@ import { validatePromoCode } from '../../services/promoCodeService';
 import { createOrder } from '../../services/orderService';
 import { isValidUzPhone, formatUzPhoneInput, UZ_PHONE_PLACEHOLDER } from '../../utils/phone.js';
 import LocationInput from '../../components/LocationInput.jsx';
+import { getPublicPaymentCard } from '../../services/paymentCardService';
 
 const PAYMENT_LABELS = { naqd: 'Naqd', karta: 'Karta', online: 'Onlayn' };
 
@@ -35,6 +36,7 @@ export default function CartPage() {
   const [error, setError] = useState('');
   const [placing, setPlacing] = useState(false);
   const [locationLoading, setLocationLoading] = useState(false);
+  const [paymentCard, setPaymentCard] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -266,8 +268,8 @@ export default function CartPage() {
         {paymentMethod === 'karta' && (
           <div className="form-group card" style={{ marginTop: 10 }}>
             <strong>Karta orqali to‘lov</strong>
-            <div style={{ marginTop: 6 }}>Karta raqami: {import.meta.env.VITE_CARD_NUMBER || 'Admin karta ma’lumotini kiritmagan'}</div>
-            <div>Karta egasi: {import.meta.env.VITE_CARD_HOLDER || '—'}</div>
+            <div style={{ marginTop: 6 }}>Karta raqami: {paymentCard?.cardNumber ? paymentCard.cardNumber.replace(/(\\d{4})(?=\\d)/g, '$1 ') : 'Admin karta ma’lumotini kiritmagan'}</div>
+            <div>Karta egasi: {paymentCard?.cardHolder || '—'}</div>
             <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6 }}>Pul o‘tkazgach, chek rasmini yuklang. Buyurtma to‘lovi kassir tekshirguncha kutilmoqda.</div>
             <input className="input" type="file" accept="image/jpeg,image/png,image/webp" style={{ marginTop: 8 }} onChange={e => setReceiptFile(e.target.files?.[0] || null)} />
             {receiptFile && <div className="success-text">Chek tanlandi: {receiptFile.name}</div>}
