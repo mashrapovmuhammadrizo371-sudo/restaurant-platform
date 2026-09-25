@@ -52,6 +52,7 @@ export default function OrdersPage() {
           <div style={{ fontWeight: 700, marginTop: 4 }}>
             {o.total.toLocaleString()} so'm · {o.paymentMethod} · {o.paymentStatus === 'paid' ? "To'langan" : 'Kutilmoqda'}
           </div>
+          {o.paymentMethod === 'karta' && <div style={{ fontSize: 13, marginTop: 6 }}>💳 Tushgan karta: {o.paymentCardNumber ? o.paymentCardNumber.replace(/(\d{4})(?=\d)/g, '$1 ') : '—'}{o.paymentCardHolder ? ` · ${o.paymentCardHolder}` : ''}</div>}
           {o.paymentMethod === 'karta' && o.receiptImage && (
             <div style={{ marginTop: 10 }}>
               <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 5 }}>💳 Mijoz yuborgan to‘lov cheki</div>
