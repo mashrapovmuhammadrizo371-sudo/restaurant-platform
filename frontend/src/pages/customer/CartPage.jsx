@@ -22,6 +22,7 @@ export default function CartPage() {
 
   const [orderType, setOrderType] = useState('delivery');
   const [deliveryAddress, setDeliveryAddress] = useState(defaultAddress);
+  const [deliveryLocation, setDeliveryLocation] = useState({ latitude: null, longitude: null, accuracy: null });
   // Customers can enter the app with just a name (no phone on the
   // account), so a contact number for the courier is collected here
   // instead — required for delivery orders only.
@@ -171,7 +172,15 @@ export default function CartPage() {
         items: cart.items.map(i => ({ food: i.food._id, quantity: i.quantity })),
         paymentMethod,
         ...(receiptImage ? { receiptImage } : {}),
-        ...(orderType === 'delivery' ? { deliveryAddress, contactPhone } : { tableId }),
+        ...(orderType === 'delivery' ? {
+          deliveryAddress,
+          contactPhone,
+          ...(deliveryLocation.latitude !== null && deliveryLocation.longitude !== null ? {
+            deliveryLatitude: deliveryLocation.latitude,
+            deliveryLongitude: deliveryLocation.longitude,
+            deliveryLocationAccuracy: deliveryLocation.accuracy
+          } : {})
+        } : { tableId }),
         ...(promoApplied ? { promoCode: promoApplied.code } : {})
       };
       await createOrder(payload);
@@ -240,7 +249,7 @@ export default function CartPage() {
           <>
             <div className="form-group">
               <label className="form-label">Manzil</label>
-              <LocationInput value={deliveryAddress} onChange={setDeliveryAddress} placeholder="Yetkazib berish manzili" />
+              <LocationInput value={deliveryAddress} onChange={setDeliveryAddress} onLocation={setDeliveryLocation} placeholder="Yetkazib berish manzili" />
             </div>
             <div className="form-group">
               <label className="form-label">Bog'lanish uchun telefon</label>
