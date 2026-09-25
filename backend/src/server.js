@@ -29,7 +29,7 @@ const waiterRoutes = require('./routes/waiterRoutes');
 const app = express();
 
 app.use(cors({ origin: process.env.CLIENT_URL || '*' }));
-app.use(express.json());
+app.use(express.json({ limit: '8mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 if (process.env.NODE_ENV !== 'test') {
