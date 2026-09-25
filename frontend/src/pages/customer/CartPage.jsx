@@ -40,6 +40,18 @@ export default function CartPage() {
 
   useEffect(() => {
     let cancelled = false;
+    getPublicPaymentCard()
+      .then(res => {
+        if (!cancelled) setPaymentCard(res?.card || null);
+      })
+      .catch(() => {
+        if (!cancelled) setPaymentCard(null);
+      });
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
 
     async function loadTables() {
       if (orderType !== 'table' || !cart.brand) {
