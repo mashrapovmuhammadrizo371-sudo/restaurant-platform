@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export default function LocationInput({ value, onChange, placeholder, rows = 0 }) {
+export default function LocationInput({ value, onChange, onLocation, placeholder, rows = 0 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -13,18 +13,35 @@ export default function LocationInput({ value, onChange, placeholder, rows = 0 }
     setError('');
     navigator.geolocation.getCurrentPosition(
       async ({ coords }) => {
+        const latitude = Number(coords.latitude);
+        const longitude = Number(coords.longitude);
+        const accuracy = Number(coords.accuracy);
+        onLocation?.({ latitude, longitude, accuracy });
         try {
-          const response = await fetch(
-            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${coords.latitude}&longitude=${coords.longitude}&localityLanguage=ru`
-          );
+          // BigDataCloud is city/suburb level only, so use a street-level
+          // reverse geocoder for the actual road/building address.
+          const url = new URL('https://nominatim.openstreetmap.org/reverse');
+          url.searchParams.set('format', 'jsonv2');
+          url.searchParams.set('lat', latitude);
+          url.searchParams.set('lon', longitude);
+          url.searchParams.set('zoom', '18');
+          url.searchParams.set('addressdetails', '1');
+          const response = await fetch(url.toString(), { headers: { Accept: 'application/json' } });
           if (!response.ok) throw new Error();
           const data = await response.json();
-          const address = [data.locality, data.city, data.principalSubdivision, data.countryName]
-            .filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).join(', ');
+          const a = data.address || {};
+          const address = [
+            a.road || a.pedestrian || a.footway,
+            a.house_number,
+            a.house_name,
+            a.suburb || a.neighbourhood,
+            a.city_district || a.town || a.city || a.village,
+            a.state
+          ].filter(Boolean).filter((v, i, arr) => arr.indexOf(v) === i).join(', ');
           if (address) onChange(address);
-          else setError("Joylashuv aniqlandi, lekin manzilni olishning iloji bo‘lmadi.");
+          else setError(`Aniq koordinata olindi (${latitude.toFixed(6)}, ${longitude.toFixed(6)}), lekin ko‘cha/manzil topilmadi.`);
         } catch {
-          setError("Manzilni avtomatik aniqlab bo‘lmadi.");
+          setError(`Aniq koordinata olindi: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}. Ko‘cha manzilini avtomatik topib bo‘lmadi.`);
         } finally { setLoading(false); }
       },
       err => {
@@ -32,7 +49,7 @@ export default function LocationInput({ value, onChange, placeholder, rows = 0 }
         setError(messages[err.code] || "Joylashuvni aniqlab bo‘lmadi.");
         setLoading(false);
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
     );
   }
 
