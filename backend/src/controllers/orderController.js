@@ -56,13 +56,17 @@ const createOrder = asyncHandler(async (req, res) => {
 
   const {
     brand, orderType, items: rawItems, paymentMethod,
-    deliveryAddress, contactPhone, tableId, promoCode: promoCodeStr
+    deliveryAddress, contactPhone, tableId, promoCode: promoCodeStr, receiptImage
   } = req.body;
 
   if (!brand || !orderType || !paymentMethod) {
     throw new ApiError(400, 'brand, orderType and paymentMethod are required');
   }
   if (!['delivery', 'table'].includes(orderType)) throw new ApiError(400, 'Invalid orderType');
+  if (paymentMethod === 'karta' && !receiptImage) throw new ApiError(400, 'Card transfer receipt is required');
+  if (receiptImage && (paymentMethod !== 'karta' || typeof receiptImage !== 'string' || !/^data:image\/(jpeg|png|webp);base64,/.test(receiptImage) || receiptImage.length > 7 * 1024 * 1024)) {
+    throw new ApiError(400, 'Invalid receipt image (JPEG, PNG or WebP; maximum 5 MB)');
+  }
   if (orderType === 'delivery' && !deliveryAddress) {
     throw new ApiError(400, 'deliveryAddress is required for delivery orders');
   }
@@ -109,6 +113,7 @@ const createOrder = asyncHandler(async (req, res) => {
     total,
     promoCode: promoCodeDoc ? promoCodeDoc._id : null,
     paymentMethod,
+    receiptImage: receiptImage || null,
     deliveryAddress: orderType === 'delivery' ? deliveryAddress : null,
     contactPhone: orderType === 'delivery' ? contactPhone : null,
     table: orderType === 'table' ? table._id : null,
@@ -193,7 +198,7 @@ const listOrders = asyncHandler(async (req, res) => {
   if (req.user.role === ROLES.COURIER) filter.courier = req.user._id;
   if (req.user.role === ROLES.OFITSIANT) filter.ofitsiant = req.user._id;
 
-  const orders = await Order.find(filter)
+  const orders = await Order.find(filter).select('+receiptImage')
     .populate('brand', 'name mainColor')
     .populate('customer', 'name phone')
     .populate('courier', 'name phone')
@@ -205,7 +210,7 @@ const listOrders = asyncHandler(async (req, res) => {
 });
 
 const getOrder = asyncHandler(async (req, res) => {
-  const order = await Order.findById(req.params.id)
+  const order = await Order.findById(req.params.id).select('+receiptImage')
     .populate('brand', 'name mainColor')
     .populate('customer', 'name phone')
     .populate('courier', 'name phone')
