@@ -65,6 +65,7 @@ export default function OperatorPage() {
             {o.items.map((it, idx) => <li key={idx}>{it.name} × {it.quantity}</li>)}
           </ul>
           <div style={{ fontWeight: 700 }}>{o.total.toLocaleString()} so'm · {o.paymentMethod}</div>
+          {o.paymentMethod === 'karta' && <><div style={{ fontSize: 13, marginTop: 6 }}>💳 Tushgan karta: {o.paymentCardNumber ? o.paymentCardNumber.replace(/(\d{4})(?=\d)/g, '$1 ') : '—'}{o.paymentCardHolder ? ` · ${o.paymentCardHolder}` : ''}</div>{o.receiptImage && <a href={o.receiptImage} target="_blank" rel="noreferrer"><img src={o.receiptImage} alt="To‘lov cheki" style={{ display: 'block', maxWidth: '100%', maxHeight: 280, objectFit: 'contain', borderRadius: 8, marginTop: 8 }} /></a>}</>}
           <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
             <button className="btn btn-primary" onClick={() => handleAccept(o._id)}>Qabul qilish</button>
             <button className="btn btn-danger" onClick={() => handleReject(o._id)}>Rad etish</button>
