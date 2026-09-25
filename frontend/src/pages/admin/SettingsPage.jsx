@@ -19,7 +19,45 @@ export default function SettingsPage() {
   const [cardSaving, setCardSaving] = useState(false);
   const [cardMessage, setCardMessage] = useState('');
 
-  React.useEffect(() => {\n    getAdminPaymentCard()\n      .then(res => {\n        const card = res?.card;\n        if (card) {\n          setCardNumber(String(card.cardNumber || '').replace(/\\D/g, '').replace(/(.{4})/g, '$1 ').trim());\n          setCardHolder(card.cardHolder || '');\n        }\n      })\n      .catch(err => setError(err.message))\n      .finally(() => setCardLoading(false));\n  }, []);\n\n  function formatCardNumber(value) {\n    return String(value || '').replace(/\\D/g, '').slice(0, 19).replace(/(.{4})/g, '$1 ').trim();\n  }\n\n  async function handleSaveCard(e) {\n    e.preventDefault();\n    setCardMessage('');\n    setError('');\n    const raw = cardNumber.replace(/\\D/g, '');\n    if (raw.length < 12) {\n      setError('Karta raqamini to‘liq kiriting');\n      return;\n    }\n    setCardSaving(true);\n    try {\n      await saveAdminPaymentCard({ cardNumber: raw, cardHolder });\n      setCardNumber(formatCardNumber(raw));\n      setCardMessage('Karta saqlandi');\n    } catch (err) {\n      setError(err.message);\n    } finally {\n      setCardSaving(false);\n    }\n  }\n\n  async function handleChangePassword(e) {
+  React.useEffect(() => {
+    getAdminPaymentCard()
+      .then(res => {
+        const card = res?.card;
+        if (card) {
+          setCardNumber(String(card.cardNumber || '').replace(/\\D/g, '').replace(/(.{4})/g, '$1 ').trim());
+          setCardHolder(card.cardHolder || '');
+        }
+      })
+      .catch(err => setError(err.message))
+      .finally(() => setCardLoading(false));
+  }, []);
+
+  function formatCardNumber(value) {
+    return String(value || '').replace(/\\D/g, '').slice(0, 19).replace(/(.{4})/g, '$1 ').trim();
+  }
+
+  async function handleSaveCard(e) {
+    e.preventDefault();
+    setCardMessage('');
+    setError('');
+    const raw = cardNumber.replace(/\\D/g, '');
+    if (raw.length < 12) {
+      setError('Karta raqamini to‘liq kiriting');
+      return;
+    }
+    setCardSaving(true);
+    try {
+      await saveAdminPaymentCard({ cardNumber: raw, cardHolder });
+      setCardNumber(formatCardNumber(raw));
+      setCardMessage('Karta saqlandi');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setCardSaving(false);
+    }
+  }
+
+  async function handleChangePassword(e) {
     e.preventDefault();
     setError(''); setMessage('');
     try {
