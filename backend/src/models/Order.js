@@ -32,6 +32,10 @@ const orderSchema = new mongoose.Schema(
 
     // delivery-specific
     deliveryAddress: { type: String, default: null },
+    // Exact device GPS snapshot for delivery orders. The accuracy value is supplied by the browser in meters.
+    deliveryLatitude: { type: Number, default: null },
+    deliveryLongitude: { type: Number, default: null },
+    deliveryLocationAccuracy: { type: Number, default: null },
     // Contact number for the courier to reach the customer. Collected at
     // checkout regardless of whether the customer has a phone on their
     // account (customers can now enter with just a name — see
