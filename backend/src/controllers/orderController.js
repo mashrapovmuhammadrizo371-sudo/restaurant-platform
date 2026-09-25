@@ -5,6 +5,7 @@ const Food = require('../models/Food');
 const Table = require('../models/Table');
 const PromoCode = require('../models/PromoCode');
 const Customer = require('../models/Customer');
+const PaymentCard = require('../models/PaymentCard');
 const generateOrderNumber = require('../utils/orderNumber');
 const notify = require('../services/notifyService');
 const { ROLES } = require('../config/roles');
@@ -95,6 +96,15 @@ const createOrder = asyncHandler(async (req, res) => {
 
   const total = subtotal - discount;
 
+  let paymentCardNumber = null;
+  let paymentCardHolder = null;
+  if (paymentMethod === 'karta') {
+    const paymentCard = await PaymentCard.findOne({ isActive: true }).sort({ updatedAt: -1 });
+    if (!paymentCard) throw new ApiError(400, 'Admin karta ma’lumoti kiritilmagan');
+    paymentCardNumber = paymentCard.cardNumber;
+    paymentCardHolder = paymentCard.cardHolder || '';
+  }
+
   let table = null;
   if (orderType === 'table') {
     table = await Table.findOne({ _id: tableId, brand, isActive: true });
@@ -113,6 +123,8 @@ const createOrder = asyncHandler(async (req, res) => {
     total,
     promoCode: promoCodeDoc ? promoCodeDoc._id : null,
     paymentMethod,
+    paymentCardNumber,
+    paymentCardHolder,
     receiptImage: receiptImage || null,
     deliveryAddress: orderType === 'delivery' ? deliveryAddress : null,
     contactPhone: orderType === 'delivery' ? contactPhone : null,
