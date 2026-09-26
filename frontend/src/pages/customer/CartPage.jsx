@@ -36,6 +36,7 @@ export default function CartPage() {
   const [promoError, setPromoError] = useState('');
   const [error, setError] = useState('');
   const [placing, setPlacing] = useState(false);
+  const [showRegistrationNotice, setShowRegistrationNotice] = useState(false);
   const [locationLoading, setLocationLoading] = useState(false);
   const [paymentCard, setPaymentCard] = useState(null);
 
@@ -134,7 +135,7 @@ export default function CartPage() {
   async function handlePlaceOrder() {
     setError('');
     if (!customer) {
-      navigate('/register?returnTo=%2Fcart');
+      setShowRegistrationNotice(true);
       return;
     }
     if (!cart.items.length) return;
@@ -325,6 +326,38 @@ export default function CartPage() {
           {placing ? <span className="spinner" /> : 'Buyurtma berish'}
         </button>
       </div>
+
+      {showRegistrationNotice && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="registration-notice-title"
+          onClick={() => setShowRegistrationNotice(false)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,.45)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16
+          }}
+        >
+          <div
+            className="card"
+            onClick={e => e.stopPropagation()}
+            style={{ width: '100%', maxWidth: 360, padding: 20, background: 'var(--card-bg, #fff)' }}
+          >
+            <h3 id="registration-notice-title" style={{ marginTop: 0 }}>Регистрация</h3>
+            <p style={{ lineHeight: 1.5, marginBottom: 18 }}>
+              Кечирасиз, сиз буюртма беришингиздан олдин регистрациядан ўтинг. Хавотир олманг, сиз киритган маълумотлар хавфсиз жойда сақланади.
+            </p>
+            <button
+              type="button"
+              className="btn btn-primary"
+              style={{ width: '100%' }}
+              onClick={() => navigate('/register?returnTo=%2Fcart')}
+            >
+              Ўтиш
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
